@@ -2,14 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Shell from "@/components/Shell";
 import ProductUse from "@/components/ProductUse";
-import { BONES, BONE_TYPES, TYPE_LABEL, YOUTUBE_CHANNEL } from "@/lib/bones";
+import { BONES, PRODUCTS, REGION_LABEL, YOUTUBE_CHANNEL, getBone, type Region } from "@/lib/bones";
+import { ROLES, roleOfBone } from "@/lib/roles";
 
 export const metadata: Metadata = {
-  title: "뼈BTI 제품 도감 — 우리 제품은 어디에 어떻게 쓰일까?",
-  description: "뼈마다 그 부위를 지켜주는 비엘테크 제품과 시술 방법, 시술 영상을 모았어요.",
+  title: "뼈BTI 제품 도감 — 10가지 업무 유형과 뼈, 우리 제품",
+  description: "업무 유형마다 닮은 뼈, 그 뼈를 지켜주는 비엘테크 제품과 시술 방법, 시술 영상을 모았어요.",
 };
 
-const TYPE_EN = { support: "Support", connect: "Connect", breakthrough: "Breakthrough", detail: "Detail" } as const;
+const REGIONS: Region[] = ["arm", "leg"];
 
 export default function GuidePage() {
   return (
@@ -19,32 +20,53 @@ export default function GuidePage() {
         <h1>
           뼈BTI <em>제품 도감</em>
         </h1>
-        <p className="hero-sub">뼈마다 그 부위를 지켜주는 우리 제품과, 실제로 어떻게 쓰이는지 시술 영상으로 알아봐요.</p>
+        <p className="hero-sub">10가지 업무 유형이 닮은 뼈, 그 뼈를 지켜주는 우리 제품과 실제 시술 영상을 모았어요.</p>
       </section>
 
-      <nav className="guide-toc">
-        {BONES.map((b) => (
-          <a key={b.id} href={`#${b.id}`}>
-            {b.short}
-          </a>
-        ))}
-      </nav>
-
-      {BONE_TYPES.map((t) => (
-        <section key={t} className="guide-type">
-          <p className="eyebrow">{TYPE_EN[t]}</p>
-          <h2 className="section-title">{TYPE_LABEL[t]}</h2>
-          {BONES.filter((b) => b.type === t).map((b) => (
-            <article key={b.id} id={b.id} className="block guide-bone">
-              <h3>{b.name}</h3>
-              <p className="guide-fact">
-                {b.fact}
-                <br />
-                잘 다치는 상황 · {b.injury}
+      <section className="block">
+        <p className="eyebrow">10 Work Types</p>
+        <h2>업무 유형과 닮은 뼈</h2>
+        <div className="role-table">
+          {ROLES.map((r) => (
+            <div key={r.id} className="role-row">
+              <p className="role-row-name">
+                <b>{r.name}</b> <i>{r.en}</i>
               </p>
-              <ProductUse boneId={b.id} compact />
-            </article>
+              <p className="role-row-tag">{r.tagline}</p>
+              <p className="role-row-bones">
+                {r.bones.map((id) => {
+                  const b = getBone(id)!;
+                  return (
+                    <a key={id} href={`#${id}`}>
+                      {b.short} · {PRODUCTS[b.product].name}
+                    </a>
+                  );
+                })}
+              </p>
+            </div>
           ))}
+        </div>
+      </section>
+
+      {REGIONS.map((region) => (
+        <section key={region} className="guide-type">
+          <p className="eyebrow">{region === "arm" ? "Arm & Hand" : "Leg & Foot"}</p>
+          <h2 className="section-title">{REGION_LABEL[region]}</h2>
+          {BONES.filter((b) => b.region === region).map((b) => {
+            const role = roleOfBone(b.id);
+            return (
+              <article key={b.id} id={b.id} className="block guide-bone">
+                {role && <p className="badge">{role.name}의 뼈</p>}
+                <h3>{b.name}</h3>
+                <p className="guide-fact">
+                  {b.fact}
+                  <br />
+                  잘 다치는 상황 · {b.injury}
+                </p>
+                <ProductUse boneId={b.id} compact />
+              </article>
+            );
+          })}
         </section>
       ))}
 
@@ -57,7 +79,7 @@ export default function GuidePage() {
       </p>
       <div className="cta">
         <Link href="/" className="btn btn-primary">
-          나는 어떤 뼈일까? 테스트하기 →
+          나의 업무 유형과 뼈 알아보기 →
         </Link>
       </div>
       <p className="hint">교육용 안내이며 의료 진단·치료 지침이 아닙니다. 실제 시술은 의료진의 판단에 따릅니다.</p>

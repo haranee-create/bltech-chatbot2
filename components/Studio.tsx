@@ -1,21 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import ProductUse from "./ProductUse";
+import TraitMeter from "./TraitMeter";
 import { makeShareCards, shrinkPhoto } from "@/lib/card";
-import { QUESTIONS, type BoneType } from "@/lib/bones";
-import { DEPARTMENTS, ROLES, type Department } from "@/lib/roles";
+import { DEPARTMENTS, QUESTIONS, ROLES, getRole, type Department, type Scores, type Trait } from "@/lib/roles";
 import type { GenerateResponse } from "@/lib/types";
 
 const LOADING_LINES = [
-  "206개의 뼈를 한 장씩 넘겨보는 중…",
-  "당신의 역할을 회의실에 앉혀보는 중…",
+  "일곱 개의 답을 성향 점수로 바꾸는 중…",
+  "열 가지 업무 유형 중 당신의 자리를 찾는 중…",
+  "206개의 뼈 중 당신을 닮은 뼈를 고르는 중…",
   "마우스를 덜덜 떨며 초상화를 그리는 중…",
   "페인트통으로 과감하게 칠하는 중…",
-  "삐져나간 색을 예술이라 부르는 중…",
   "액자에 금박을 두르는 중…",
-  "제품 도감에서 보호대를 꺼내는 중…",
   "당신의 이야기를 쓰는 중…",
 ];
 
@@ -25,7 +24,7 @@ type Cards = { card: Blob; og: Blob; cardUrl: string };
 export default function Studio() {
   const [photo, setPhoto] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [answers, setAnswers] = useState<(BoneType | null)[]>(() => QUESTIONS.map(() => null));
+  const [answers, setAnswers] = useState<(Trait | null)[]>(() => QUESTIONS.map(() => null));
   const [dept, setDept] = useState<Department | null>(null);
   const [phase, setPhase] = useState<Phase>("idle");
   const [result, setResult] = useState<GenerateResponse | null>(null);
@@ -50,10 +49,10 @@ export default function Studio() {
     let url: string | null = null;
     const { bone, role, writing: w } = result;
     makeShareCards(result.image, {
+      roleName: role.name,
+      roleTagline: role.tagline,
       short: bone.short,
       nickname: w.nickname,
-      role: `${role.name} · ${role.tagline}`,
-      roleName: role.name,
       style: w.card_style,
       injury: bone.injury,
       brace: bone.brace,
@@ -84,10 +83,6 @@ export default function Studio() {
     });
   }
 
-  function answer(qi: number, type: BoneType) {
-    setAnswers((a) => a.map((v, i) => (i === qi ? type : v)));
-  }
-
   async function generate() {
     if (!photo || !ready) return;
     setPhase("loading");
@@ -116,13 +111,13 @@ export default function Studio() {
 
   function postText() {
     if (!result) return "";
-    return `저는 ${result.bone.short}래요 🦴 회사에선 "${result.role.name}"이라네요… 여러분은 무슨 뼈예요?\n#뼈BTI #비엘테크 #뼈대있는회사`;
+    return `저는 "${result.role.name}"이래요. 닮은 뼈는 ${result.bone.short} 🦴 여러분은 무슨 유형이에요?\n#뼈BTI #비엘테크 #뼈대있는회사`;
   }
 
   async function uploadShare(): Promise<string | null> {
     if (shareUrl) return shareUrl;
     if (!cards || !result) return null;
-    const { bone, role, writing: w } = result;
+    const { bone, role, scores, writing: w } = result;
     const fd = new FormData();
     fd.append("card", cards.card, "card.jpg");
     fd.append("og", cards.og, "og.jpg");
@@ -133,7 +128,7 @@ export default function Studio() {
         roleId: role.id,
         short: bone.short,
         name: bone.name,
-        typeLabel: bone.typeLabel,
+        scores,
         nickname: w.nickname,
         one_liner: w.one_liner,
         personality: w.personality,
@@ -180,7 +175,7 @@ export default function Studio() {
 
   async function shareNative() {
     if (!cards || !result) return;
-    const file = new File([cards.card], `뼈BTI_${result.bone.short}.jpg`, { type: "image/jpeg" });
+    const file = new File([cards.card], `뼈BTI_${result.role.name}_${result.bone.short}.jpg`, { type: "image/jpeg" });
     try {
       if (navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], text: postText(), url: shareUrl ?? window.location.origin });
@@ -196,7 +191,7 @@ export default function Studio() {
     if (!cards || !result) return;
     const a = document.createElement("a");
     a.href = cards.cardUrl;
-    a.download = `뼈BTI_${result.bone.short}.jpg`;
+    a.download = `뼈BTI_${result.role.name}_${result.bone.short}.jpg`;
     a.click();
   }
 
@@ -217,16 +212,16 @@ export default function Studio() {
   }
 
   if (phase === "done" && result) {
-    const { bone, role, writing: w } = result;
+    const { bone, role, scores, writing: w } = result;
     return (
       <article>
         <section className="result-hero">
-          <p className="eyebrow">
-            {bone.typeLabel} · {bone.en}
+          <p className="eyebrow">Your Work Type</p>
+          <p className="result-kicker">{QUESTIONS.length}가지 질문으로 알아본 당신의 업무 유형은</p>
+          <h1 className="result-title">{role.name}</h1>
+          <p className="result-en">
+            <i>{role.en}</i> — {role.tagline}
           </p>
-          <p className="result-kicker">206개의 뼈 중 당신은</p>
-          <h1 className="result-title">{bone.name}</h1>
-          <p className="result-nick">&ldquo;{w.nickname}&rdquo;</p>
         </section>
 
         <figure className="artwork">
@@ -238,13 +233,13 @@ export default function Studio() {
           </div>
           <figcaption className="plaque">
             <b>「{w.nickname}」</b>
-            마우스 드로잉 · MS 그림판, {new Date().getFullYear()}
+            {role.name}을 닮은 뼈, {bone.short} · 마우스 드로잉, {new Date().getFullYear()}
           </figcaption>
         </figure>
 
         <p className="lead">{w.one_liner}</p>
 
-        <RoleSection roleId={role.id} name={role.name} en={role.en} tagline={role.tagline} story={w.role_story}>
+        <RoleSection roleId={role.id} scores={scores} story={w.role_story}>
           <div className="role-grid">
             <div className="card-soft">
               <h3>나의 강점</h3>
@@ -262,11 +257,14 @@ export default function Studio() {
         </RoleSection>
 
         <section className="block">
-          <p className="eyebrow">Bone Profile</p>
-          <h2>뼈로 보는 나</h2>
+          <p className="eyebrow">Your Bone · {bone.en}</p>
+          <h2>
+            {role.name}을 닮은 뼈, <span className="accent">{bone.name}</span>
+          </h2>
+          <p className="block-sub">&ldquo;{w.nickname}&rdquo;</p>
           <dl className="facts">
             <div className="card-soft wide">
-              <dt>일하는 스타일</dt>
+              <dt>왜 {bone.short}일까?</dt>
               <dd>{w.personality}</dd>
             </div>
             <div className="card-soft">
@@ -290,17 +288,17 @@ export default function Studio() {
 
         <section className="block">
           <p className="eyebrow">Protected by BL tech</p>
-          <h2>나를 지키는 비엘테크 제품</h2>
+          <h2>{bone.short}에게 필요한 우리 제품</h2>
           <p className="guardian">{w.guardian}</p>
-          <ProductUse boneId={bone.id} />
+          <ProductUse boneId={bone.id} brief />
           <p className="guide-link">
-            <Link href="/guide">다른 뼈를 지키는 우리 제품도 보기 — 제품 도감 →</Link>
+            <Link href="/guide">다른 유형의 뼈와 우리 제품도 보기 — 제품 도감 →</Link>
           </p>
         </section>
 
         <section className="block share">
           <p className="eyebrow">Share</p>
-          <h2>동료는 무슨 뼈일까?</h2>
+          <h2>동료는 무슨 유형일까?</h2>
           <div className="actions">
             <button className="btn btn-fb" onClick={shareFacebook} disabled={!cards || sharing}>
               {sharing ? "공유 준비 중…" : "페이스북에 공유"}
@@ -342,9 +340,11 @@ export default function Studio() {
         <h1>
           나는 어떤 <em>뼈</em>일까?
         </h1>
-        <p className="hero-sub">사진 한 장과 질문 세 개로 알아보는, 당신을 닮은 뼈와 회사 속 나의 역할</p>
+        <p className="hero-sub">
+          핵심 질문 {QUESTIONS.length}개로 알아보는 나의 업무 유형, 그리고 그런 나를 닮은 뼈와 그 뼈를 지키는 우리 제품
+        </p>
         <p className="hero-link">
-          <Link href="/guide">우리 제품은 어디에 어떻게 쓰일까? 제품 도감 →</Link>
+          <Link href="/guide">10가지 업무 유형과 뼈, 우리 제품 도감 →</Link>
         </p>
       </section>
 
@@ -352,7 +352,7 @@ export default function Studio() {
         <div className="panel-head">
           <span className="num">01</span>
           <h2>사진</h2>
-          <p className="panel-desc">초상화를 그리는 데만 쓰여요. 어떤 뼈인지는 질문 답으로만 정해져요.</p>
+          <p className="panel-desc">초상화를 그리는 데만 쓰여요. 유형과 뼈는 질문 답으로만 정해져요.</p>
         </div>
         <label
           className={`dropzone ${preview ? "has-photo" : ""}`}
@@ -381,29 +381,10 @@ export default function Studio() {
       <section className="panel">
         <div className="panel-head">
           <span className="num">02</span>
-          <h2>세 가지 질문</h2>
+          <h2>업무 유형 질문</h2>
+          <p className="panel-desc">생각나는 대로 빠르게 골라 주세요. 고르면 다음 질문으로 넘어가요.</p>
         </div>
-        {QUESTIONS.map((q, qi) => (
-          <fieldset key={qi} className="question" disabled={loading}>
-            <legend>
-              <span className="q-num">Q{qi + 1}.</span>
-              {q.q}
-            </legend>
-            <div className="options">
-              {q.options.map((o, oi) => (
-                <button
-                  key={oi}
-                  type="button"
-                  className={`option ${answers[qi] === o.type ? "selected" : ""}`}
-                  aria-pressed={answers[qi] === o.type}
-                  onClick={() => answer(qi, o.type)}
-                >
-                  <b>{String.fromCharCode(65 + oi)}.</b> {o.label}
-                </button>
-              ))}
-            </div>
-          </fieldset>
-        ))}
+        <Quiz answers={answers} setAnswers={setAnswers} disabled={loading} />
       </section>
 
       <section className="panel">
@@ -439,9 +420,15 @@ export default function Studio() {
       ) : (
         <div className="cta">
           <button className="btn btn-primary" onClick={generate} disabled={!ready}>
-            내 뼈 알아보기
+            내 유형과 뼈 알아보기
           </button>
-          {!ready && <p className="hint">사진을 올리고 질문 세 개에 모두 답하면 시작할 수 있어요.</p>}
+          {!ready && (
+            <p className="hint">
+              {!photo ? "사진을 올리고 " : ""}
+              {answers.every(Boolean) ? "" : `질문 ${QUESTIONS.length}개에 모두 답하면 `}
+              시작할 수 있어요.
+            </p>
+          )}
         </div>
       )}
       {error && <p className="error">{error}</p>}
@@ -449,31 +436,118 @@ export default function Studio() {
   );
 }
 
-/** 회사 속 나의 역할: 역할 이름 · 이야기 · 10가지 역할 중 내 위치 */
+/** 한 번에 한 질문씩. 고르면 자동으로 다음 질문, 점으로 이전 질문에 돌아갈 수 있다 */
+function Quiz({
+  answers,
+  setAnswers,
+  disabled,
+}: {
+  answers: (Trait | null)[];
+  setAnswers: React.Dispatch<React.SetStateAction<(Trait | null)[]>>;
+  disabled: boolean;
+}) {
+  const [step, setStep] = useState(0);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const total = QUESTIONS.length;
+  const done = answers.filter(Boolean).length;
+  const q = QUESTIONS[step];
+
+  useEffect(() => () => {
+    if (timer.current) clearTimeout(timer.current);
+  }, []);
+
+  function pick(trait: Trait) {
+    setAnswers((a) => a.map((v, i) => (i === step ? trait : v)));
+    if (timer.current) clearTimeout(timer.current);
+    if (step < total - 1) timer.current = setTimeout(() => setStep((s) => Math.min(s + 1, total - 1)), 260);
+  }
+
+  return (
+    <div className="quiz">
+      <div className="quiz-top">
+        <span className="quiz-count">
+          Q{step + 1}
+          <small> / {total}</small>
+        </span>
+        <span className="quiz-progress" aria-hidden>
+          <span style={{ width: `${(done / total) * 100}%` }} />
+        </span>
+        <span className="quiz-done">{done === total ? "모두 답했어요 ✓" : `${done}개 답함`}</span>
+      </div>
+
+      <fieldset className="question" disabled={disabled} key={step}>
+        <legend className="quiz-q">{q.q}</legend>
+        <div className="options">
+          {q.options.map((o, oi) => (
+            <button
+              key={oi}
+              type="button"
+              className={`option ${answers[step] === o.trait ? "selected" : ""}`}
+              aria-pressed={answers[step] === o.trait}
+              onClick={() => pick(o.trait)}
+            >
+              <b>{String.fromCharCode(65 + oi)}.</b> {o.label}
+            </button>
+          ))}
+        </div>
+      </fieldset>
+
+      <div className="quiz-nav">
+        <button type="button" className="link-btn" disabled={disabled || step === 0} onClick={() => setStep(step - 1)}>
+          ← 이전
+        </button>
+        <span className="quiz-dots">
+          {QUESTIONS.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              className={`quiz-dot ${i === step ? "cur" : ""} ${answers[i] ? "done" : ""}`}
+              aria-label={`${i + 1}번 질문${answers[i] ? " (답함)" : ""}`}
+              disabled={disabled}
+              onClick={() => setStep(i)}
+            />
+          ))}
+        </span>
+        <button
+          type="button"
+          className="link-btn"
+          disabled={disabled || step === total - 1 || !answers[step]}
+          onClick={() => setStep(step + 1)}
+        >
+          다음 →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/** 회사 속 나의 역할: 업무 성향 점수 · 역할 이야기 · 10가지 역할 중 내 위치 */
 export function RoleSection({
   roleId,
-  name,
-  en,
-  tagline,
+  scores,
   story,
   children,
 }: {
   roleId: string;
-  name: string;
-  en: string;
-  tagline: string;
+  scores: Scores;
   story: string;
   children?: React.ReactNode;
 }) {
+  const role = getRole(roleId);
+  if (!role) return null;
   return (
     <section className="block">
       <p className="eyebrow">My Role at BL tech</p>
       <h2>
-        회사 속 나의 역할, <span className="accent">{name}</span>
+        회사 속 나의 역할, <span className="accent">{role.name}</span>
       </h2>
       <p className="block-sub">
-        <i>{en}</i> — {tagline}
+        <i>{role.en}</i> — {role.tagline}
       </p>
+
+      <h3 className="mini-title">나의 업무 성향</h3>
+      <TraitMeter scores={scores} highlight={role.traits} />
+
       <div className="story">
         {story
           .split(/\n+/)
@@ -484,7 +558,7 @@ export function RoleSection({
       </div>
       {children}
       <div className="role-map">
-        <p className="role-map-label">10가지 역할 유형 중 당신은</p>
+        <p className="role-map-label">10가지 업무 유형 중 당신은</p>
         <div className="role-chips">
           {ROLES.map((r) => (
             <span key={r.id} className={`role-chip ${r.id === roleId ? "me" : ""}`} title={r.tagline}>

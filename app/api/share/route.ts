@@ -30,7 +30,7 @@ export async function POST(req: Request) {
       roleId: clip(m.roleId, 30),
       short: clip(m.short, 20),
       name: clip(m.name, 40),
-      typeLabel: clip(m.typeLabel, 10),
+      scores: scoresOf(m.scores),
       nickname: clip(m.nickname, 30),
       one_liner: clip(m.one_liner, 120),
       personality: clip(m.personality, 600),
@@ -51,6 +51,12 @@ export async function POST(req: Request) {
 
   const origin = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || new URL(req.url).origin;
   return NextResponse.json({ id, url: `${origin}/s/${id}` });
+}
+
+function scoresOf(v: unknown): ShareMeta["scores"] {
+  const o = (v ?? {}) as Record<string, unknown>;
+  const n = (k: string) => Math.max(0, Math.min(10, Math.round(Number(o[k]) || 0)));
+  return { support: n("support"), connect: n("connect"), breakthrough: n("breakthrough"), detail: n("detail") };
 }
 
 function clip(v: unknown, max: number) {

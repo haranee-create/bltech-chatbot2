@@ -12,14 +12,14 @@ const MUTED = "#7a7266";
 const LINE = "#e5dccb";
 const GOLD = "#a8844c";
 
-export const CTA = "나는 어떤 뼈일까? 테스트하기 →";
+export const CTA = "나의 업무 유형과 뼈 알아보기 →";
 export const HASHTAGS = "#뼈BTI #비엘테크 #뼈대있는회사";
 
 export type CardInfo = {
-  short: string; // 주상골
-  nickname: string;
-  role: string; // 리더형 · 방향을 정하고 사람을 모으는 사람
   roleName: string; // 리더형
+  roleTagline: string; // 방향을 정하고 사람을 모으는 사람
+  short: string; // 슬개골
+  nickname: string;
   style: string; // 일하는 스타일 요약
   injury: string; // 조심할 순간
   brace: string; // 나를 지키는 제품
@@ -30,7 +30,7 @@ export type CardInfo = {
 /** 공유 카드 2종 합성: 세로 1200×1500(다운로드/앱 공유용), 가로 1200×630(페이스북 링크 미리보기용) */
 export async function makeShareCards(imageSrc: string, info: CardInfo): Promise<{ card: Blob; og: Blob }> {
   // 구글 폰트는 한글을 글자 범위별로 쪼개 내려주므로, 실제로 쓸 글자를 넘겨서 미리 받아둔다
-  const text = `나는 206개 뼈 중 「」"' 회사 속 역할 일하는 스타일 조심할 순간 나를 지키는 제품 뼈 상식 BL tech 뼈BTI ${CTA}${HASHTAGS}${Object.values(info).join("")}`;
+  const text = `나의 업무 유형은 닮은 뼈 「」"' 업무 성향 일하는 스타일 조심할 순간 나를 지키는 제품 뼈 상식 BL tech 뼈BTI ${CTA}${HASHTAGS}${Object.values(info).join("")}`;
   await Promise.all(
     [`900 40px ${SERIF}`, `700 40px ${SERIF}`, `600 40px ${SERIF}`, `400 40px ${SANS}`, `500 40px ${SANS}`, `700 40px ${SANS}`, `600 40px ${DISPLAY}`].map(
       (f) => document.fonts.load(f, text),
@@ -55,38 +55,42 @@ function drawPortrait(img: HTMLImageElement, info: CardInfo) {
   // 액자 속 그림
   drawFramed(ctx, img, 230, 96, 740);
 
-  // 제목
+  // 제목: 업무 유형 → 닮은 뼈
   ctx.textAlign = "center";
+  ctx.fillStyle = MUTED;
+  ctx.font = `500 28px ${SANS}`;
+  ctx.fillText("나의 업무 유형은", W / 2, 892);
+
   ctx.fillStyle = INK;
-  const title = `나는 206개 뼈 중 「${info.short}」`;
-  ctx.font = `900 ${fitFont(ctx, title, W - 160, 60, `900 {s}px ${SERIF}`)}px ${SERIF}`;
-  ctx.fillText(title, W / 2, 940);
+  const title = `「${info.roleName}」`;
+  ctx.font = `900 ${fitFont(ctx, title, W - 160, 66, `900 {s}px ${SERIF}`)}px ${SERIF}`;
+  ctx.fillText(title, W / 2, 962);
 
   ctx.fillStyle = GOLD;
-  const nick = `“${info.nickname}”`;
-  ctx.font = `600 ${fitFont(ctx, nick, W - 200, 42, `600 {s}px ${SERIF}`)}px ${SERIF}`;
-  ctx.fillText(nick, W / 2, 1000);
+  const sub = `닮은 뼈 · ${info.short}  “${info.nickname}”`;
+  ctx.font = `600 ${fitFont(ctx, sub, W - 200, 36, `600 {s}px ${SERIF}`)}px ${SERIF}`;
+  ctx.fillText(sub, W / 2, 1016);
 
   ctx.fillStyle = GOLD;
-  ctx.fillRect(W / 2 - 50, 1030, 100, 2);
+  ctx.fillRect(W / 2 - 50, 1042, 100, 2);
 
   // 항목
   ctx.textAlign = "left";
   const rows: [string, string][] = [
-    ["회사 속 역할", info.role],
+    ["업무 성향", info.roleTagline],
     ["일하는 스타일", info.style],
     ["조심할 순간", info.injury],
     ["나를 지키는 제품", info.brace],
     ["뼈 상식", info.fact],
   ];
-  let y = 1090;
+  let y = 1098;
   for (const [label, value] of rows) {
     drawRow(ctx, label, value, 130, y, W - 260);
     y += 52;
   }
 
   // 버튼
-  drawButton(ctx, CTA, (W - 660) / 2, 1352, 660, 74, 32);
+  drawButton(ctx, CTA, (W - 660) / 2, 1356, 660, 74, 32);
 
   // 해시태그
   ctx.textAlign = "center";
@@ -113,21 +117,21 @@ function drawLandscape(img: HTMLImageElement, info: CardInfo) {
 
   ctx.fillStyle = MUTED;
   ctx.font = `500 26px ${SANS}`;
-  ctx.fillText("나는 206개 뼈 중", x, 140);
+  ctx.fillText("나의 업무 유형은", x, 140);
 
   ctx.fillStyle = INK;
-  const big = `「${info.short}」`;
+  const big = `「${info.roleName}」`;
   ctx.font = `900 ${fitFont(ctx, big, maxW, 70, `900 {s}px ${SERIF}`)}px ${SERIF}`;
   ctx.fillText(big, x - 14, 222);
 
-  ctx.fillStyle = GOLD;
-  const nick = `“${info.nickname}”`;
-  ctx.font = `600 ${fitFont(ctx, nick, maxW, 34, `600 {s}px ${SERIF}`)}px ${SERIF}`;
-  ctx.fillText(nick, x, 276);
-
   ctx.fillStyle = INK_SOFT;
   ctx.font = `700 26px ${SANS}`;
-  ctx.fillText(`회사 속 역할 · ${info.roleName}`, x, 330);
+  ctx.fillText(`닮은 뼈 · ${info.short}`, x, 274);
+
+  ctx.fillStyle = GOLD;
+  const nick = `“${info.nickname}”`;
+  ctx.font = `600 ${fitFont(ctx, nick, maxW, 32, `600 {s}px ${SERIF}`)}px ${SERIF}`;
+  ctx.fillText(nick, x, 322);
 
   ctx.fillStyle = INK;
   ctx.font = `400 26px ${SERIF}`;

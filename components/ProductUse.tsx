@@ -3,8 +3,20 @@
 import { useState } from "react";
 import { PROCEDURES, PRODUCTS, YOUTUBE_CHANNEL, getBone } from "@/lib/bones";
 
-/** 뼈 하나에 대해: 우리 제품은 무엇이고, 어디에 어떻게 쓰이며, 시술 영상은 무엇인지 */
-export default function ProductUse({ boneId, compact = false }: { boneId: string; compact?: boolean }) {
+/**
+ * 뼈 하나에 대해: 우리 제품은 무엇이고, 어디에 어떻게 쓰이며, 시술 영상은 무엇인지.
+ * brief: 결과 화면용 간단 버전 — 시술 영상은 버튼을 눌러야 펼쳐진다.
+ */
+export default function ProductUse({
+  boneId,
+  compact = false,
+  brief = false,
+}: {
+  boneId: string;
+  compact?: boolean;
+  brief?: boolean;
+}) {
+  const [showVideo, setShowVideo] = useState(!brief);
   const bone = getBone(boneId);
   if (!bone) return null;
   const product = PRODUCTS[bone.product];
@@ -28,7 +40,13 @@ export default function ProductUse({ boneId, compact = false }: { boneId: string
             시술 · <b>{procedure.name}</b> <span>({procedure.ko})</span>
           </p>
           <p className="use-area">{procedure.area}</p>
-          <YouTube id={procedure.video.id} title={procedure.video.title} />
+          {showVideo ? (
+            <YouTube id={procedure.video.id} title={procedure.video.title} autoplay={brief} />
+          ) : (
+            <button type="button" className="btn btn-video" onClick={() => setShowVideo(true)}>
+              ▶ 시술 영상 보기
+            </button>
+          )}
         </div>
       ) : (
         <p className="use-more">
@@ -44,8 +62,8 @@ export default function ProductUse({ boneId, compact = false }: { boneId: string
 }
 
 /** 썸네일만 먼저 보여주고, 누르면 그때 플레이어를 불러온다 (페이지가 무거워지지 않게) */
-function YouTube({ id, title }: { id: string; title: string }) {
-  const [play, setPlay] = useState(false);
+function YouTube({ id, title, autoplay = false }: { id: string; title: string; autoplay?: boolean }) {
+  const [play, setPlay] = useState(autoplay);
   return (
     <figure className="yt">
       <div className="yt-frame">

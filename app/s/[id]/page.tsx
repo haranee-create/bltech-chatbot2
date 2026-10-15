@@ -19,8 +19,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const { meta, ogUrl } = share;
   const role = getRole(meta.roleId);
-  const title = `나는 206개 뼈 중 【${meta.short}】 "${meta.nickname}"${role ? ` · ${role.name}` : ""}`;
-  const description = `${meta.one_liner} · 나는 어떤 뼈일까? #뼈BTI #비엘테크`;
+  const title = `나의 업무 유형은 「${role?.name ?? meta.short}」 · 닮은 뼈 ${meta.short}`;
+  const description = `${meta.one_liner} · 나는 어떤 유형, 어떤 뼈일까? #뼈BTI #비엘테크`;
   return {
     title,
     description,
@@ -44,31 +44,39 @@ export default async function SharePage({ params }: Props) {
   return (
     <Shell>
       <section className="result-hero">
-        <p className="eyebrow">{meta.typeLabel}</p>
-        <p className="result-kicker">206개의 뼈 중 이 동료는</p>
-        <h1 className="result-title">{meta.name}</h1>
-        <p className="result-nick">&ldquo;{meta.nickname}&rdquo;</p>
+        <p className="eyebrow">Colleague&apos;s Work Type</p>
+        <p className="result-kicker">이 동료의 업무 유형은</p>
+        <h1 className="result-title">{role?.name ?? meta.name}</h1>
+        {role && (
+          <p className="result-en">
+            <i>{role.en}</i> — {role.tagline}
+          </p>
+        )}
       </section>
 
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img className="share-card" src={cardUrl} alt={`뼈BTI 결과: ${meta.name}`} />
+      <img className="share-card" src={cardUrl} alt={`뼈BTI 결과: ${role?.name ?? ""} · ${meta.name}`} />
 
       <div className="cta">
         <Link href="/" className="btn btn-primary">
-          나는 어떤 뼈일까? 테스트하기 →
+          나의 업무 유형과 뼈 알아보기 →
         </Link>
       </div>
 
-      {role && meta.role_story && (
-        <RoleSection roleId={role.id} name={role.name} en={role.en} tagline={role.tagline} story={meta.role_story} />
+      {role && meta.role_story && meta.scores && (
+        <RoleSection roleId={role.id} scores={meta.scores} story={meta.role_story} />
       )}
 
       <section className="block">
-        <p className="eyebrow">Bone Profile</p>
-        <h2>뼈로 보는 이 동료</h2>
+        <p className="eyebrow">Bone</p>
+        <h2>
+          {role ? `${role.name}을 닮은 뼈, ` : ""}
+          <span className="accent">{meta.name}</span>
+        </h2>
+        <p className="block-sub">&ldquo;{meta.nickname}&rdquo;</p>
         <dl className="facts">
           <div className="card-soft wide">
-            <dt>일하는 스타일</dt>
+            <dt>왜 {meta.short}일까?</dt>
             <dd>{meta.personality}</dd>
           </div>
           <div className="card-soft wide">
@@ -81,8 +89,8 @@ export default async function SharePage({ params }: Props) {
       {meta.boneId && (
         <section className="block">
           <p className="eyebrow">Protected by BL tech</p>
-          <h2>이 뼈를 지키는 비엘테크 제품</h2>
-          <ProductUse boneId={meta.boneId} />
+          <h2>{meta.short}에게 필요한 우리 제품</h2>
+          <ProductUse boneId={meta.boneId} brief />
           <p className="guide-link">
             <Link href="/guide">우리 제품 도감 보기 →</Link>
           </p>

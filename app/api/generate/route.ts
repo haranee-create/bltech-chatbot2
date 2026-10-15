@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { APIError } from "openai";
-import { BONE_TYPES, QUESTIONS, TYPE_LABEL, matchBone, pickType, type BoneType } from "@/lib/bones";
-import { DEPARTMENTS, matchRole, type Department } from "@/lib/roles";
+import { getBone } from "@/lib/bones";
+import { DEPARTMENTS, QUESTIONS, TRAITS, matchRole, pickBoneId, type Department, type Trait } from "@/lib/roles";
 import { drawBonePortrait, writeBoneResult } from "@/lib/openai";
 import { DAILY_LIMIT, clientIp, refund, take } from "@/lib/ratelimit";
 import type { GenerateResponse } from "@/lib/types";
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
     if (!ALLOWED.includes(file.type)) return error("JPG, PNG, WEBP 이미지만 올릴 수 있어요.", 400);
     if (file.size > MAX_BYTES) return error("이미지가 너무 커요 (최대 4MB).", 413);
 
-    let answers: BoneType[];
+    let answers: Trait[];
     try {
       answers = JSON.parse(String(form.get("answers")));
     } catch {
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     if (
       !Array.isArray(answers) ||
       answers.length !== QUESTIONS.length ||
-      !answers.every((a) => BONE_TYPES.includes(a))
+      !answers.every((a) => TRAITS.includes(a))
     ) {
       return error("질문에 모두 답해주세요.", 400);
     }
@@ -41,21 +41,18 @@ export async function POST(req: Request) {
     if (!take(ip)) return error(`오늘은 ${DAILY_LIMIT}번까지만 그릴 수 있어요. 내일 다시 와주세요!`, 429);
     charged = true;
 
-    const type = pickType(answers);
-    const bone = matchBone(type);
-    const role = matchRole(answers, type);
+    const { role, scores } = matchRole(answers);
+    const bone = getBone(pickBoneId(role))!;
     const buffer = Buffer.from(await file.arrayBuffer());
 
     // 사진은 그림에만 쓰고, 작문은 뼈 데이터만으로 한다 (얼굴로 사람을 판단하지 않음)
-    const [writing, image] = await Promise.all([writeBoneResult(bone, role, dept), drawBonePortrait(buffer, file.type, bone)]);
+    const [writing, image] = await Promise.all([writeBoneResult(bone, role, scores, dept), drawBonePortrait(buffer, file.type, bone)]);
 
     const body: GenerateResponse = {
       image,
       writing,
       bone: {
         id: bone.id,
-        type: bone.type,
-        typeLabel: TYPE_LABEL[bone.type],
         name: bone.name,
         short: bone.short,
         en: bone.nameEn.split(" (")[0].toUpperCase(),
@@ -63,6 +60,7 @@ export async function POST(req: Request) {
         brace: bone.brace,
       },
       role: { id: role.id, name: role.name, en: role.en, tagline: role.tagline },
+      scores,
     };
     return NextResponse.json(body);
   } catch (e) {

@@ -1,6 +1,6 @@
 import OpenAI, { APIError, toFile } from "openai";
-import { BONES, PROCEDURES, PRODUCTS, TYPE_LABEL, type Bone } from "./bones";
-import type { Department, Role } from "./roles";
+import { BONES, PROCEDURES, PRODUCTS, type Bone } from "./bones";
+import { QUESTIONS, TRAITS, TRAIT_LABEL, type Department, type Role, type Scores } from "./roles";
 import type { BoneWriting } from "./types";
 
 const IMAGE_MODEL = process.env.IMAGE_MODEL || "gpt-image-2.5-sunburst";
@@ -43,8 +43,8 @@ const WRITING_SCHEMA = {
   properties: {
     bone: str("뼈 이름"),
     nickname: str("이 뼈를 닮은 직장인 별명 (10자 이내, 예: '회의실의 빗장')"),
-    one_liner: str("결과를 한 문장으로 (40자 이내)"),
-    personality: str("이 뼈처럼 일하는 당신의 스타일 (2~3문장, 뼈의 실제 기능에 빗댈 것)"),
+    one_liner: str("결과를 한 문장으로. 업무 유형과 뼈를 함께 담을 것 (40자 이내, 예: '팀을 일으켜 세우는 리더, 당신은 슬개골입니다!')"),
+    personality: str("왜 이 업무 유형의 당신이 이 뼈를 닮았는지, 뼈의 실제 기능에 빗대 재치 있게 (2~3문장, [이 뼈를 닮은 이유] 참고)"),
     fun_fact: str("동료에게 자랑할 수 있는 이 뼈의 반전 상식 (1문장, 데이터에 있는 사실만)"),
     weakness: str("당신(=이 뼈)이 조심해야 할 순간 (1문장, 잘 다치는 상황을 직장 상황에 빗대되 실제 상황도 언급)"),
     guardian: str("당신을 지켜주는 보조기 소개 (1~2문장, [보조기 안내]를 따를 것)"),
@@ -85,7 +85,7 @@ const COMPANY = `비엘테크(BL tech)는 강원도 춘천에 본사, 원주에 
 
 const EXAMPLE = `{"bone":"쇄골(빗장뼈)","nickname":"부서 간 빗장","one_liner":"당신은 팀과 팀을 잇는 유일한 다리, 쇄골입니다!","personality":"쇄골이 팔과 몸통을 잇는 유일한 뼈 다리이듯, 당신 없이는 생산팀과 관리팀이 대화를 못 합니다. 메신저 알림이 가장 많이 울리는 사람, 바로 당신이죠.","fun_fact":"쇄골은 팔을 몸통에 연결하는 유일한 뼈 연결고리랍니다.","weakness":"모든 부담을 어깨로 받다가 쓰러질 수 있어요. 실제로도 넘어지며 어깨로 떨어질 때 쇄골 골절이 흔합니다.","guardian":"(여기에는 [보조기 안내]의 비엘테크 제품을 제품명 그대로 소개)","bone_tip":"오늘은 어깨를 뒤로 크게 10번 돌려주세요.","best_partner":"(여기에는 [다른 뼈 목록]에서 고른 뼈와 이유)","card_style":"팀과 팀을 잇는 유일한 다리","card_fact":"쇄골은 팔과 몸통을 잇는 유일한 뼈!","role_story":"(4문단 이야기)","role_strengths":["(강점1)","(강점2)","(강점3)"],"role_growth":"(성장 포인트)"}`;
 
-export async function writeBoneResult(bone: Bone, role: Role, dept?: Department): Promise<BoneWriting> {
+export async function writeBoneResult(bone: Bone, role: Role, scores: Scores, dept?: Department): Promise<BoneWriting> {
   const others = BONES.filter((b) => b.id !== bone.id)
     .map((b) => `- ${b.name}: ${b.fact}`)
     .join("\n");
@@ -111,10 +111,11 @@ export async function writeBoneResult(bone: Bone, role: Role, dept?: Department)
 guardian은 반드시 '${product.name}'라는 제품명을 그대로 포함하고, 위 특징 중 하나를 골라 우리 회사가 만드는 제품이라는 자부심이 느껴지게 소개한다.
 다른 회사 제품이나 비엘테크가 만들지 않는 보호 용품은 언급하지 않는다.${procedureLine}
 
-[참가자 응답 유형]: ${TYPE_LABEL[bone.type]}
-
-[회사 속 역할]: ${role.name} (${role.en}) — ${role.tagline}
+[회사 속 역할 = 참가자의 업무 유형]: ${role.name} (${role.en}) — ${role.tagline}
 역할의 본질: ${role.essence}
+업무 성향 점수 (질문 ${QUESTIONS.length}개): ${TRAITS.map((t) => `${TRAIT_LABEL[t]} ${scores[t]}`).join(", ")}
+
+[이 뼈를 닮은 이유] ${role.why}
 role_story, role_strengths, role_growth는 이 역할을 중심으로 쓴다. ${deptLine}
 
 [회사 배경]

@@ -1,18 +1,106 @@
-import type { BoneType } from "./bones";
-
 /**
- * 회사 속 나의 역할 10가지.
- * 질문 3개의 답 조합으로 정한다: 주 유형(뼈를 정한 유형) + 보조 유형.
- * - 세 답이 모두 같은 유형이면 그 유형의 '순수' 역할
- * - 아니면 주 유형과, 나머지 답 중 하나의 유형을 짝지은 역할
+ * 업무 유형 테스트.
+ * - 질문 7개, 각 선택지는 4가지 성향(지지·연결·돌파·섬세) 중 하나에 1점
+ * - 점수로 회사 속 역할 10가지 중 하나를 정한다 (같은 답이면 항상 같은 유형)
+ * - 역할마다 그 역할을 닮은 뼈(1~2개)가 있고, 결과의 뼈는 그중 하나
  */
+
+export type Trait = "support" | "connect" | "breakthrough" | "detail";
+
+export const TRAITS: Trait[] = ["support", "connect", "breakthrough", "detail"];
+
+export const TRAIT_LABEL: Record<Trait, string> = {
+  support: "지지",
+  connect: "연결",
+  breakthrough: "돌파",
+  detail: "섬세",
+};
+
+export const TRAIT_DESC: Record<Trait, string> = {
+  support: "묵묵히 받치고 끝까지 책임지는 힘",
+  connect: "사람과 사람을 잇고 분위기를 살리는 힘",
+  breakthrough: "결정하고 밀고 나가는 힘",
+  detail: "준비하고 꼼꼼히 완성하는 힘",
+};
+
+export type Scores = Record<Trait, number>;
+
+/** 핵심 질문 7개. 마지막 질문은 점수가 같을 때 결정권을 가진다 */
+export const QUESTIONS: { q: string; options: { label: string; trait: Trait }[] }[] = [
+  {
+    q: "회의 시간에 나는?",
+    options: [
+      { label: "말은 적지만 다 듣고 있다", trait: "support" },
+      { label: "분위기 메이커", trait: "connect" },
+      { label: "결론부터 말한다", trait: "breakthrough" },
+      { label: "회의록은 내가 쓴다", trait: "detail" },
+    ],
+  },
+  {
+    q: "새 프로젝트가 떨어졌다. 제일 먼저 하는 일은?",
+    options: [
+      { label: "목표와 마감부터 정한다", trait: "breakthrough" },
+      { label: "자료부터 찾고 계획표를 만든다", trait: "detail" },
+      { label: "내 몫을 확인하고 바로 손에 잡는다", trait: "support" },
+      { label: "누구랑 같이 할지 사람부터 모은다", trait: "connect" },
+    ],
+  },
+  {
+    q: "금요일 오후 5시 50분, 급한 일이 들어오면?",
+    options: [
+      { label: "묵묵히 처리", trait: "support" },
+      { label: "동료를 불러 같이", trait: "connect" },
+      { label: "월요일에 하자고 협상", trait: "breakthrough" },
+      { label: "이미 예상하고 준비해둠", trait: "detail" },
+    ],
+  },
+  {
+    q: "동료들이 나를 찾는 순간은?",
+    options: [
+      { label: "다른 부서랑 말이 안 통할 때", trait: "connect" },
+      { label: "숫자·서류가 맞는지 봐야 할 때", trait: "detail" },
+      { label: "아무도 결정을 못 내리고 있을 때", trait: "breakthrough" },
+      { label: "믿고 맡길 사람이 필요할 때", trait: "support" },
+    ],
+  },
+  {
+    q: "일이 꼬였을 때 나는?",
+    options: [
+      { label: "원인을 끝까지 파고든다", trait: "detail" },
+      { label: "될 때까지 묵묵히 한다", trait: "support" },
+      { label: "판을 바꿔 다른 방법을 시도한다", trait: "breakthrough" },
+      { label: "동료와 얘기하며 실마리를 찾는다", trait: "connect" },
+    ],
+  },
+  {
+    q: "나의 업무 에너지원은?",
+    options: [
+      { label: "커피", trait: "breakthrough" },
+      { label: "간식", trait: "connect" },
+      { label: "칭찬", trait: "detail" },
+      { label: "퇴근", trait: "support" },
+    ],
+  },
+  {
+    q: "나를 한 단어로 표현하면?",
+    options: [
+      { label: "든든함", trait: "support" },
+      { label: "친화력", trait: "connect" },
+      { label: "추진력", trait: "breakthrough" },
+      { label: "꼼꼼함", trait: "detail" },
+    ],
+  },
+];
+
 export type Role = {
   id: string;
   name: string; // 리더형
   en: string; // The Leader
   tagline: string; // 한 줄 소개
   essence: string; // 작문 모델에 넘기는 역할의 본질
-  types: [BoneType] | [BoneType, BoneType];
+  traits: [Trait] | [Trait, Trait];
+  bones: string[]; // 이 역할을 닮은 뼈 (lib/bones.ts의 id)
+  why: string; // 왜 이 뼈인지 (작문 모델에 넘기는 비유의 힌트)
 };
 
 export const ROLES: Role[] = [
@@ -22,7 +110,9 @@ export const ROLES: Role[] = [
     en: "The Leader",
     tagline: "방향을 정하고 사람을 모으는 사람",
     essence: "비전을 쉬운 말로 풀어 사람들을 모으고, 결정이 필요한 순간 앞에 서서 팀을 이끈다. 책임을 피하지 않는다.",
-    types: ["connect", "breakthrough"],
+    traits: ["connect", "breakthrough"],
+    bones: ["patella"],
+    why: "슬개골이 허벅지 근육의 힘을 정강이로 전달해 무릎을 펴게 하듯, 팀의 힘을 모아 앞으로 일으켜 세운다.",
   },
   {
     id: "strategist",
@@ -30,7 +120,9 @@ export const ROLES: Role[] = [
     en: "The Strategist",
     tagline: "판을 읽고 한 수 앞을 두는 사람",
     essence: "상황과 숫자를 꼼꼼히 읽어 핵심을 짚고, 과감한 결론으로 연결한다. 남들이 못 본 리스크와 기회를 먼저 본다.",
-    types: ["breakthrough", "detail"],
+    traits: ["breakthrough", "detail"],
+    bones: ["distal-radius"],
+    why: "요골이 손목을 돌리게 해주듯, 판의 방향을 돌려 판세를 바꾼다.",
   },
   {
     id: "executor",
@@ -38,7 +130,9 @@ export const ROLES: Role[] = [
     en: "The Driver",
     tagline: "정한 일은 끝까지 밀고 가는 사람",
     essence: "목표가 정해지면 묵묵하지만 강하게 밀어붙여 끝내 완수한다. 마감과 약속을 지키는 힘이 팀의 속도가 된다.",
-    types: ["support", "breakthrough"],
+    traits: ["support", "breakthrough"],
+    bones: ["metatarsal"],
+    why: "중족골이 반복 충격 속에서도 한 걸음씩 내딛게 하듯(그래서 행군골절이라는 별명도 있다), 끝까지 걸어 목표에 닿는다.",
   },
   {
     id: "coordinator",
@@ -46,7 +140,9 @@ export const ROLES: Role[] = [
     en: "The Coordinator",
     tagline: "모두가 함께 갈 수 있게 속도를 맞추는 사람",
     essence: "팀원 각자의 사정을 살피며 일정과 사람을 조율해 아무도 뒤처지지 않게 한다. 갈등을 부드럽게 풀어낸다.",
-    types: ["support", "connect"],
+    traits: ["support", "connect"],
+    bones: ["ulna"],
+    why: "척골이 요골과 나란히 아래팔을 이루는 짝꿍이듯, 옆 사람과 보조를 맞추며 함께 움직인다.",
   },
   {
     id: "planner",
@@ -54,7 +150,9 @@ export const ROLES: Role[] = [
     en: "The Planner",
     tagline: "사람의 마음과 디테일을 함께 설계하는 사람",
     essence: "여러 사람의 의견을 모아 꼼꼼한 계획으로 엮어낸다. 행사·출시·프로젝트의 큰 그림과 작은 체크리스트를 동시에 쥔다.",
-    types: ["connect", "detail"],
+    traits: ["connect", "detail"],
+    bones: ["metacarpal"],
+    why: "중수골이 손목과 다섯 손가락을 잇는 손바닥의 뼈대이듯, 여러 갈래의 일을 하나의 계획으로 잇는 뼈대가 된다.",
   },
   {
     id: "steward",
@@ -62,7 +160,9 @@ export const ROLES: Role[] = [
     en: "The Steward",
     tagline: "보이지 않는 곳까지 챙기는 사람",
     essence: "일정, 재고, 서류, 안전까지 빈틈없이 챙겨 조직이 매일 문제없이 돌아가게 만든다. 티 나지 않지만 없으면 바로 티 나는 사람.",
-    types: ["support", "detail"],
+    traits: ["support", "detail"],
+    bones: ["talus", "fibula"],
+    why: "거골은 근육 하나 없이 조용히 체중을 발로 전달하고, 비골은 체중은 적게 받지만 발목을 안정시킨다. 티 나지 않게 중심을 지킨다.",
   },
   {
     id: "anchor",
@@ -70,7 +170,9 @@ export const ROLES: Role[] = [
     en: "The Anchor",
     tagline: "흔들리는 날에도 팀을 받치는 사람",
     essence: "말보다 결과로 신뢰를 쌓고, 위기 때 팀이 가장 먼저 기대는 사람. 꾸준함 자체가 실력이다.",
-    types: ["support"],
+    traits: ["support"],
+    bones: ["tibia", "femur"],
+    why: "경골은 체중 대부분을 받치는 다리의 기둥이고, 대퇴골은 몸에서 가장 길고 강한 뼈다. 묵묵히 팀의 무게를 받친다.",
   },
   {
     id: "connector",
@@ -78,7 +180,9 @@ export const ROLES: Role[] = [
     en: "The Connector",
     tagline: "사람과 사람 사이에 길을 내는 사람",
     essence: "부서와 부서, 사람과 사람을 이어 일이 막힘없이 흐르게 만든다. 분위기를 살리고 협업을 끌어낸다.",
-    types: ["connect"],
+    traits: ["connect"],
+    bones: ["humerus"],
+    why: "상완골이 어깨와 팔꿈치를 잇듯 사람과 사람을 잇는다. 팔꿈치를 부딪히면 찌릿한 그곳처럼, 가는 곳마다 반응이 온다.",
   },
   {
     id: "fixer",
@@ -86,7 +190,9 @@ export const ROLES: Role[] = [
     en: "The Fixer",
     tagline: "막힌 곳을 가장 먼저 뚫는 사람",
     essence: "문제가 생기면 가장 먼저 뛰어들어 결론을 낸다. 속도와 결단력이 무기이고, 위기에서 오히려 빛난다.",
-    types: ["breakthrough"],
+    traits: ["breakthrough"],
+    bones: ["calcaneus"],
+    why: "종골이 걸을 때 첫 충격을 받아내듯, 문제가 터지면 가장 먼저 부딪혀 받아낸다.",
   },
   {
     id: "craftsman",
@@ -94,24 +200,44 @@ export const ROLES: Role[] = [
     en: "The Craftsman",
     tagline: "디테일로 품질을 완성하는 사람",
     essence: "작은 차이를 놓치지 않고 완성도를 끝까지 끌어올린다. 기록과 준비가 습관이고, 그 결과물은 믿고 쓴다.",
-    types: ["detail"],
+    traits: ["detail"],
+    bones: ["distal-phalanx", "scaphoid"],
+    why: "손가락 끝마디뼈는 정교한 손작업을 맡고, 주상골은 작지만 손목의 핵심을 지킨다. 작은 것에서 완성도가 갈린다.",
   },
 ];
 
 export const getRole = (id: string) => ROLES.find((r) => r.id === id);
+export const roleOfBone = (boneId: string) => ROLES.find((r) => r.bones.includes(boneId));
 
-const pick = <T,>(arr: readonly T[]) => arr[Math.floor(Math.random() * arr.length)];
+/** 답 → 성향 점수 */
+export function scoreAnswers(answers: Trait[]): Scores {
+  const s: Scores = { support: 0, connect: 0, breakthrough: 0, detail: 0 };
+  for (const a of answers) s[a] += 1;
+  return s;
+}
 
-/** 주 유형 + 나머지 답에서 보조 유형을 골라 역할을 정한다 */
-export function matchRole(answers: BoneType[], primary: BoneType): Role {
-  const others = answers.filter((a) => a !== primary);
-  if (others.length === 0) return ROLES.find((r) => r.types.length === 1 && r.types[0] === primary)!;
+/**
+ * 점수 → 역할.
+ * 1위가 2위보다 3점 이상 앞서면 1위 성향의 '순수' 역할, 아니면 1·2위 성향을 짝지은 역할.
+ * 점수가 같으면 마지막 질문(나를 한 단어로)에서 고른 성향이 앞선다.
+ */
+export function matchRole(answers: Trait[]): { role: Role; scores: Scores } {
+  const scores = scoreAnswers(answers);
+  const tie = answers[answers.length - 1];
+  const ranked = [...TRAITS].sort(
+    (a, b) => scores[b] - scores[a] || Number(b === tie) - Number(a === tie) || TRAITS.indexOf(a) - TRAITS.indexOf(b),
+  );
+  const [first, second] = ranked;
+  const role =
+    scores[first] - scores[second] >= 3
+      ? ROLES.find((r) => r.traits.length === 1 && r.traits[0] === first)!
+      : ROLES.find((r) => r.traits.length === 2 && r.traits.includes(first) && r.traits.includes(second))!;
+  return { role, scores };
+}
 
-  const count = new Map<BoneType, number>();
-  for (const a of others) count.set(a, (count.get(a) ?? 0) + 1);
-  const max = Math.max(...count.values());
-  const secondary = pick([...count.entries()].filter(([, n]) => n === max).map(([t]) => t));
-  return ROLES.find((r) => r.types.length === 2 && r.types.includes(primary) && r.types.includes(secondary))!;
+/** 역할을 닮은 뼈 중 하나 (재미로 랜덤) */
+export function pickBoneId(role: Role): string {
+  return role.bones[Math.floor(Math.random() * role.bones.length)];
 }
 
 /** 소속 부서 (선택). 고르면 역할 이야기가 그 부서의 업무 장면으로 쓰인다 */

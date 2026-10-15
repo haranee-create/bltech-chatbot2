@@ -1,4 +1,4 @@
-import type { BoneType } from "./bones";
+import type { Scores } from "./roles";
 
 /** 작문 모델(gpt-5.6-terra)이 돌려주는 결과 */
 export type BoneWriting = {
@@ -20,8 +20,6 @@ export type BoneWriting = {
 
 export type BoneInfo = {
   id: string;
-  type: BoneType;
-  typeLabel: string;
   name: string;
   short: string;
   en: string; // SCAPHOID
@@ -39,6 +37,7 @@ export type RoleInfo = {
 export type GenerateResponse = {
   bone: BoneInfo;
   role: RoleInfo;
+  scores: Scores;
   writing: BoneWriting;
   image: string; // data URL
 };
@@ -48,7 +47,7 @@ export type ShareMeta = {
   roleId: string;
   short: string;
   name: string;
-  typeLabel: string;
+  scores: Scores;
   nickname: string;
   one_liner: string;
   personality: string;

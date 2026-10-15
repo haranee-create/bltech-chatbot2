@@ -4,17 +4,13 @@
  * 모든 뼈는 그 뼈를 지켜주는 비엘테크 제품(PRODUCTS)과, 그 부위를 고정하는 시술(PROCEDURES)과 짝지어져 있습니다.
  * - 제품 특징·사용법: www.bl-tech.co.kr 제품 소개 기준
  * - 시술 영상: 비엘테크 공식 유튜브(@bltechco.ltd.2093) / 홈페이지 '시술 영상'
+ * 어떤 업무 유형이 어떤 뼈를 닮았는지는 lib/roles.ts에 있습니다.
  * `braceEn`은 그림에 그릴 소품(영어)입니다.
  */
 
-export type BoneType = "support" | "connect" | "breakthrough" | "detail";
+export type Region = "arm" | "leg";
 
-export const TYPE_LABEL: Record<BoneType, string> = {
-  support: "지지형",
-  connect: "연결형",
-  breakthrough: "돌파형",
-  detail: "섬세형",
-};
+export const REGION_LABEL: Record<Region, string> = { arm: "팔 · 손목 · 손", leg: "다리 · 발목 · 발" };
 
 const SITE = "https://www.bl-tech.co.kr";
 export const YOUTUBE_CHANNEL = "https://www.youtube.com/@bltechco.ltd.2093";
@@ -204,7 +200,7 @@ export type ProcedureId = keyof typeof PROCEDURES;
 
 export type Bone = {
   id: string;
-  type: BoneType;
+  region: Region;
   name: string; // 한국어 이름 (괄호 속 우리말 포함)
   short: string; // 카드에 넣을 짧은 이름
   nameEn: string; // 그림 프롬프트용
@@ -220,10 +216,9 @@ const CAST_EN = "bright colorful roll of orthopedic casting tape";
 const SPLINT_EN = "padded orthopedic splint";
 
 export const BONES: Bone[] = [
-  // ── 지지형: 묵묵히 체중을 받치는 뼈
   {
     id: "femur",
-    type: "support",
+    region: "leg",
     name: "대퇴골(넓적다리뼈)",
     short: "대퇴골",
     nameEn: "femur (thigh bone)",
@@ -236,7 +231,7 @@ export const BONES: Bone[] = [
   },
   {
     id: "tibia",
-    type: "support",
+    region: "leg",
     name: "경골(정강이뼈)",
     short: "경골",
     nameEn: "tibia (shin bone)",
@@ -248,7 +243,7 @@ export const BONES: Bone[] = [
   },
   {
     id: "calcaneus",
-    type: "support",
+    region: "leg",
     name: "종골(발뒤꿈치뼈)",
     short: "종골",
     nameEn: "calcaneus (heel bone)",
@@ -261,7 +256,7 @@ export const BONES: Bone[] = [
   },
   {
     id: "talus",
-    type: "support",
+    region: "leg",
     name: "거골(목말뼈)",
     short: "거골",
     nameEn: "talus (ankle bone)",
@@ -272,10 +267,9 @@ export const BONES: Bone[] = [
     procedure: "short-leg-cast",
     braceEn: CAST_EN,
   },
-  // ── 연결형: 이것과 저것을 잇는 뼈
   {
     id: "ulna",
-    type: "connect",
+    region: "arm",
     name: "척골(자뼈)",
     short: "척골",
     nameEn: "ulna (forearm bone)",
@@ -288,7 +282,7 @@ export const BONES: Bone[] = [
   },
   {
     id: "humerus",
-    type: "connect",
+    region: "arm",
     name: "상완골(위팔뼈)",
     short: "상완골",
     nameEn: "humerus (upper arm bone)",
@@ -301,7 +295,7 @@ export const BONES: Bone[] = [
   },
   {
     id: "patella",
-    type: "connect",
+    region: "leg",
     name: "슬개골(무릎뼈)",
     short: "슬개골",
     nameEn: "patella (kneecap)",
@@ -312,10 +306,9 @@ export const BONES: Bone[] = [
     procedure: "long-leg-splint-en",
     braceEn: SPLINT_EN,
   },
-  // ── 돌파형: 부딪히며 앞으로 나가는 뼈
   {
     id: "distal-radius",
-    type: "breakthrough",
+    region: "arm",
     name: "요골 원위부(손목 쪽 아래팔뼈)",
     short: "요골",
     nameEn: "radius (forearm bone near the wrist)",
@@ -328,7 +321,7 @@ export const BONES: Bone[] = [
   },
   {
     id: "metatarsal",
-    type: "breakthrough",
+    region: "leg",
     name: "중족골(발등뼈)",
     short: "중족골",
     nameEn: "metatarsal (foot bone)",
@@ -341,7 +334,7 @@ export const BONES: Bone[] = [
   },
   {
     id: "fibula",
-    type: "breakthrough",
+    region: "leg",
     name: "비골(종아리뼈)",
     short: "비골",
     nameEn: "fibula (calf bone)",
@@ -352,10 +345,9 @@ export const BONES: Bone[] = [
     procedure: "short-leg-splint",
     braceEn: "pre-molded leg splint with velcro straps",
   },
-  // ── 섬세형: 작고 정교한 일을 하는 뼈
   {
     id: "scaphoid",
-    type: "detail",
+    region: "arm",
     name: "주상골(손배뼈)",
     short: "주상골",
     nameEn: "scaphoid (small wrist bone)",
@@ -368,7 +360,7 @@ export const BONES: Bone[] = [
   },
   {
     id: "distal-phalanx",
-    type: "detail",
+    region: "arm",
     name: "손가락 끝마디뼈",
     short: "손가락 끝마디뼈",
     nameEn: "fingertip bone (distal phalanx)",
@@ -380,7 +372,7 @@ export const BONES: Bone[] = [
   },
   {
     id: "metacarpal",
-    type: "detail",
+    region: "arm",
     name: "중수골(손허리뼈)",
     short: "중수골",
     nameEn: "metacarpal (hand bone)",
@@ -392,53 +384,5 @@ export const BONES: Bone[] = [
     braceEn: SPLINT_EN,
   },
 ];
-
-/** 질문 3개. 각 선택지는 유형 하나에 표를 던진다. */
-export const QUESTIONS: { q: string; options: { label: string; type: BoneType }[] }[] = [
-  {
-    q: "회의 시간에 나는?",
-    options: [
-      { label: "말은 적지만 다 듣고 있다", type: "support" },
-      { label: "분위기 메이커", type: "connect" },
-      { label: "결론부터 말한다", type: "breakthrough" },
-      { label: "회의록은 내가 쓴다", type: "detail" },
-    ],
-  },
-  {
-    q: "금요일 오후 5시 50분, 급한 일이 들어오면?",
-    options: [
-      { label: "묵묵히 처리", type: "support" },
-      { label: "동료를 불러 같이", type: "connect" },
-      { label: "월요일에 하자고 협상", type: "breakthrough" },
-      { label: "이미 예상하고 준비해둠", type: "detail" },
-    ],
-  },
-  {
-    q: "나의 업무 에너지원은?",
-    options: [
-      { label: "커피", type: "breakthrough" },
-      { label: "간식", type: "connect" },
-      { label: "칭찬", type: "detail" },
-      { label: "퇴근", type: "support" },
-    ],
-  },
-];
-
-export const BONE_TYPES = Object.keys(TYPE_LABEL) as BoneType[];
-
-const pick = <T,>(arr: readonly T[]) => arr[Math.floor(Math.random() * arr.length)];
-
-/** 가장 많이 나온 유형 (동점이면 랜덤) */
-export function pickType(answers: BoneType[]): BoneType {
-  const count = new Map<BoneType, number>();
-  for (const a of answers) count.set(a, (count.get(a) ?? 0) + 1);
-  const max = Math.max(...count.values());
-  return pick([...count.entries()].filter(([, n]) => n === max).map(([t]) => t));
-}
-
-/** 그 유형의 뼈 풀에서 랜덤 1개 */
-export function matchBone(type: BoneType): Bone {
-  return pick(BONES.filter((b) => b.type === type));
-}
 
 export const getBone = (id: string) => BONES.find((b) => b.id === id);
