@@ -1,6 +1,6 @@
 /**
  * 업무 유형 테스트.
- * - 질문 7개, 각 선택지는 4가지 성향(지지·연결·돌파·섬세) 중 하나에 1점
+ * - 질문 10개, 각 선택지는 4가지 성향(지지·연결·돌파·섬세) 중 하나에 1점
  * - 점수로 회사 속 역할 10가지 중 하나를 정한다 (같은 답이면 항상 같은 유형)
  * - 역할마다 그 역할을 닮은 뼈(1~2개)가 있고, 결과의 뼈는 그중 하나
  */
@@ -25,7 +25,13 @@ export const TRAIT_DESC: Record<Trait, string> = {
 
 export type Scores = Record<Trait, number>;
 
-/** 핵심 질문 7개. 마지막 질문은 점수가 같을 때 결정권을 가진다 */
+/** 받침 있으면 a, 없으면 b (예: 연결과 / 지지와) */
+export function josa(word: string, a: string, b: string) {
+  const code = word.charCodeAt(word.length - 1) - 0xac00;
+  return word + (code >= 0 && code <= 11171 && code % 28 !== 0 ? a : b);
+}
+
+/** 핵심 질문 10개. 마지막 질문은 점수가 같을 때 결정권을 가진다 */
 export const QUESTIONS: { q: string; options: { label: string; trait: Trait }[] }[] = [
   {
     q: "회의 시간에 나는?",
@@ -46,15 +52,6 @@ export const QUESTIONS: { q: string; options: { label: string; trait: Trait }[] 
     ],
   },
   {
-    q: "금요일 오후 5시 50분, 급한 일이 들어오면?",
-    options: [
-      { label: "묵묵히 처리", trait: "support" },
-      { label: "동료를 불러 같이", trait: "connect" },
-      { label: "월요일에 하자고 협상", trait: "breakthrough" },
-      { label: "이미 예상하고 준비해둠", trait: "detail" },
-    ],
-  },
-  {
     q: "동료들이 나를 찾는 순간은?",
     options: [
       { label: "다른 부서랑 말이 안 통할 때", trait: "connect" },
@@ -64,12 +61,48 @@ export const QUESTIONS: { q: string; options: { label: string; trait: Trait }[] 
     ],
   },
   {
+    q: "회의에서 의견이 팽팽하게 부딪치면?",
+    options: [
+      { label: "근거와 자료로 차분히 정리한다", trait: "detail" },
+      { label: "팀이 정한 방향에 힘을 보탠다", trait: "support" },
+      { label: "양쪽 이야기를 이어 절충안을 찾는다", trait: "connect" },
+      { label: "결론을 내고 책임지고 간다", trait: "breakthrough" },
+    ],
+  },
+  {
+    q: "금요일 오후 5시 50분, 급한 일이 들어오면?",
+    options: [
+      { label: "묵묵히 처리", trait: "support" },
+      { label: "동료를 불러 같이", trait: "connect" },
+      { label: "월요일에 하자고 협상", trait: "breakthrough" },
+      { label: "이미 예상하고 준비해둠", trait: "detail" },
+    ],
+  },
+  {
     q: "일이 꼬였을 때 나는?",
     options: [
       { label: "원인을 끝까지 파고든다", trait: "detail" },
       { label: "될 때까지 묵묵히 한다", trait: "support" },
       { label: "판을 바꿔 다른 방법을 시도한다", trait: "breakthrough" },
       { label: "동료와 얘기하며 실마리를 찾는다", trait: "connect" },
+    ],
+  },
+  {
+    q: "가장 스트레스 받는 순간은?",
+    options: [
+      { label: "결정이 계속 미뤄질 때", trait: "breakthrough" },
+      { label: "혼자 고립돼서 일할 때", trait: "connect" },
+      { label: "준비 없이 갑자기 바뀔 때", trait: "detail" },
+      { label: "맡은 일이 흐지부지될 때", trait: "support" },
+    ],
+  },
+  {
+    q: "가장 듣기 좋은 칭찬은?",
+    options: [
+      { label: "“같이 일해서 즐거웠어요”", trait: "connect" },
+      { label: "“덕분에 든든했어요”", trait: "support" },
+      { label: "“역시 꼼꼼하시네요”", trait: "detail" },
+      { label: "“덕분에 확 풀렸어요”", trait: "breakthrough" },
     ],
   },
   {
@@ -206,6 +239,9 @@ export const ROLES: Role[] = [
   },
 ];
 
+/** 이만큼 앞서면 한 가지 성향이 두드러진 '순수' 유형 */
+const PURE_LEAD = Math.ceil(QUESTIONS.length * 0.4);
+
 export const getRole = (id: string) => ROLES.find((r) => r.id === id);
 export const roleOfBone = (boneId: string) => ROLES.find((r) => r.bones.includes(boneId));
 
@@ -218,18 +254,22 @@ export function scoreAnswers(answers: Trait[]): Scores {
 
 /**
  * 점수 → 역할.
- * 1위가 2위보다 3점 이상 앞서면 1위 성향의 '순수' 역할, 아니면 1·2위 성향을 짝지은 역할.
- * 점수가 같으면 마지막 질문(나를 한 단어로)에서 고른 성향이 앞선다.
+ * 1위가 2위보다 문항 수의 40% 이상(10문항이면 4점) 앞서면 1위 성향의 '순수' 역할, 아니면 1·2위 성향을 짝지은 역할.
+ * 점수가 같으면 마지막 질문(나를 한 단어로)에서 고른 성향이, 그다음엔 더 나중 질문에서 고른 성향이 앞선다.
  */
 export function matchRole(answers: Trait[]): { role: Role; scores: Scores } {
   const scores = scoreAnswers(answers);
   const tie = answers[answers.length - 1];
   const ranked = [...TRAITS].sort(
-    (a, b) => scores[b] - scores[a] || Number(b === tie) - Number(a === tie) || TRAITS.indexOf(a) - TRAITS.indexOf(b),
+    (a, b) =>
+      scores[b] - scores[a] ||
+      Number(b === tie) - Number(a === tie) ||
+      answers.lastIndexOf(b) - answers.lastIndexOf(a) || // 그래도 같으면 더 최근에 고른 성향
+      TRAITS.indexOf(a) - TRAITS.indexOf(b),
   );
   const [first, second] = ranked;
   const role =
-    scores[first] - scores[second] >= 3
+    scores[first] - scores[second] >= PURE_LEAD
       ? ROLES.find((r) => r.traits.length === 1 && r.traits[0] === first)!
       : ROLES.find((r) => r.traits.length === 2 && r.traits.includes(first) && r.traits.includes(second))!;
   return { role, scores };

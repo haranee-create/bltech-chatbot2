@@ -5,11 +5,11 @@ import Link from "next/link";
 import ProductUse from "./ProductUse";
 import TraitMeter from "./TraitMeter";
 import { makeShareCards, shrinkPhoto } from "@/lib/card";
-import { DEPARTMENTS, QUESTIONS, ROLES, getRole, type Department, type Scores, type Trait } from "@/lib/roles";
+import { DEPARTMENTS, QUESTIONS, ROLES, TRAIT_DESC, TRAIT_LABEL, getRole, josa, type Department, type Scores, type Trait } from "@/lib/roles";
 import type { GenerateResponse } from "@/lib/types";
 
 const LOADING_LINES = [
-  "일곱 개의 답을 성향 점수로 바꾸는 중…",
+  "당신의 답을 성향 점수로 바꾸는 중…",
   "열 가지 업무 유형 중 당신의 자리를 찾는 중…",
   "206개의 뼈 중 당신을 닮은 뼈를 고르는 중…",
   "마우스를 덜덜 떨며 초상화를 그리는 중…",
@@ -382,7 +382,7 @@ export default function Studio() {
         <div className="panel-head">
           <span className="num">02</span>
           <h2>업무 유형 질문</h2>
-          <p className="panel-desc">생각나는 대로 빠르게 골라 주세요. 고르면 다음 질문으로 넘어가요.</p>
+          <p className="panel-desc">{QUESTIONS.length}문항 · 약 1분. 정답은 없어요. 평소의 나를 떠올리며 빠르게 골라 주세요.</p>
         </div>
         <Quiz answers={answers} setAnswers={setAnswers} disabled={loading} />
       </section>
@@ -547,6 +547,18 @@ export function RoleSection({
 
       <h3 className="mini-title">나의 업무 성향</h3>
       <TraitMeter scores={scores} highlight={role.traits} />
+      <p className="meter-summary">
+        {role.traits.length === 2 ? (
+          <>
+            <b>{josa(TRAIT_LABEL[role.traits[0]], "과", "와")}</b> <b>{TRAIT_LABEL[role.traits[1]]}</b> 성향이 함께 강해요.{" "}
+            {TRAIT_DESC[role.traits[0]]}과 {TRAIT_DESC[role.traits[1]]}을 고루 갖춘 {role.name}입니다.
+          </>
+        ) : (
+          <>
+            <b>{TRAIT_LABEL[role.traits[0]]}</b> 성향이 확실히 두드러져요. {TRAIT_DESC[role.traits[0]]}이 당신의 가장 큰 무기입니다.
+          </>
+        )}
+      </p>
 
       <div className="story">
         {story
