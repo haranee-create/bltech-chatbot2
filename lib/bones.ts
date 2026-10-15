@@ -428,13 +428,16 @@ export const BONE_TYPES = Object.keys(TYPE_LABEL) as BoneType[];
 
 const pick = <T,>(arr: readonly T[]) => arr[Math.floor(Math.random() * arr.length)];
 
-/** 가장 많이 나온 유형(동점이면 랜덤) → 그 유형의 뼈 풀에서 랜덤 1개 */
-export function matchBone(answers: BoneType[]): Bone {
+/** 가장 많이 나온 유형 (동점이면 랜덤) */
+export function pickType(answers: BoneType[]): BoneType {
   const count = new Map<BoneType, number>();
   for (const a of answers) count.set(a, (count.get(a) ?? 0) + 1);
   const max = Math.max(...count.values());
-  const top = [...count.entries()].filter(([, n]) => n === max).map(([t]) => t);
-  const type = pick(top);
+  return pick([...count.entries()].filter(([, n]) => n === max).map(([t]) => t));
+}
+
+/** 그 유형의 뼈 풀에서 랜덤 1개 */
+export function matchBone(type: BoneType): Bone {
   return pick(BONES.filter((b) => b.type === type));
 }
 

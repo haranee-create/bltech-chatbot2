@@ -27,6 +27,7 @@ export async function POST(req: Request) {
     const m = JSON.parse(metaRaw);
     meta = {
       boneId: clip(m.boneId, 30),
+      roleId: clip(m.roleId, 30),
       short: clip(m.short, 20),
       name: clip(m.name, 40),
       typeLabel: clip(m.typeLabel, 10),
@@ -34,6 +35,7 @@ export async function POST(req: Request) {
       one_liner: clip(m.one_liner, 120),
       personality: clip(m.personality, 600),
       fun_fact: clip(m.fun_fact, 200),
+      role_story: clip(m.role_story, 3000),
     };
   } catch {
     return NextResponse.json({ error: "잘못된 요청입니다." }, { status: 400 });

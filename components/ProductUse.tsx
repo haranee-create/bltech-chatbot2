@@ -12,7 +12,6 @@ export default function ProductUse({ boneId, compact = false }: { boneId: string
 
   return (
     <section className={`use ${compact ? "use-compact" : ""}`}>
-      {!compact && <h2 className="use-title">🏥 우리 제품은 이렇게 쓰여요</h2>}
       <div className="use-product">
         <p className="use-kind">{product.kind}</p>
         <p className="use-name">
@@ -26,14 +25,14 @@ export default function ProductUse({ boneId, compact = false }: { boneId: string
       {procedure ? (
         <div className="use-procedure">
           <p className="use-proc-name">
-            🩹 <b>{procedure.name}</b> <span>({procedure.ko})</span>
+            시술 · <b>{procedure.name}</b> <span>({procedure.ko})</span>
           </p>
           <p className="use-area">{procedure.area}</p>
           <YouTube id={procedure.video.id} title={procedure.video.title} />
         </div>
       ) : (
         <p className="use-more">
-          🎬 다른 시술 영상은{" "}
+          다른 시술 영상은{" "}
           <a href={YOUTUBE_CHANNEL} target="_blank" rel="noreferrer">
             비엘테크 유튜브
           </a>
@@ -66,7 +65,7 @@ function YouTube({ id, title }: { id: string; title: string }) {
         )}
       </div>
       <figcaption>
-        🎬 {title} ·{" "}
+        {title} ·{" "}
         <a href={`https://www.youtube.com/watch?v=${id}`} target="_blank" rel="noreferrer">
           유튜브에서 보기
         </a>

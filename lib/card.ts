@@ -1,18 +1,28 @@
 "use client";
 
-const FONT = "Gaegu";
-const NAVY = "#000080";
-const YELLOW = "#ffe14d";
+const SERIF = '"Noto Serif KR", serif';
+const SANS = '"Noto Sans KR", sans-serif';
+const DISPLAY = '"Cormorant Garamond", "Noto Serif KR", serif';
+
+const BG = "#f5f0e6";
+const PAPER = "#fffdf8";
+const INK = "#15233f";
+const INK_SOFT = "#35425e";
+const MUTED = "#7a7266";
+const LINE = "#e5dccb";
+const GOLD = "#a8844c";
 
 export const CTA = "나는 어떤 뼈일까? 테스트하기 →";
 export const HASHTAGS = "#뼈BTI #비엘테크 #뼈대있는회사";
 
 export type CardInfo = {
-  short: string; // 쇄골
+  short: string; // 주상골
   nickname: string;
+  role: string; // 리더형 · 방향을 정하고 사람을 모으는 사람
+  roleName: string; // 리더형
   style: string; // 일하는 스타일 요약
   injury: string; // 조심할 순간
-  brace: string; // 나를 지키는 보조기
+  brace: string; // 나를 지키는 제품
   fact: string; // 뼈 상식 요약
   oneLiner: string;
 };
@@ -20,10 +30,12 @@ export type CardInfo = {
 /** 공유 카드 2종 합성: 세로 1200×1500(다운로드/앱 공유용), 가로 1200×630(페이스북 링크 미리보기용) */
 export async function makeShareCards(imageSrc: string, info: CardInfo): Promise<{ card: Blob; og: Blob }> {
   // 구글 폰트는 한글을 글자 범위별로 쪼개 내려주므로, 실제로 쓸 글자를 넘겨서 미리 받아둔다
-  const text = `나는 206개 뼈 중 【】"' 💼🛡️⚠️💡 일하는 스타일 조심할 순간 나를 지키는 보조기 뼈 상식 : ${CTA}${HASHTAGS}${Object.values(info).join("")}`;
-  await Promise.all([document.fonts.load(`700 40px ${FONT}`, text), document.fonts.load(`400 40px ${FONT}`, text)]).catch(
-    () => {},
-  );
+  const text = `나는 206개 뼈 중 「」"' 회사 속 역할 일하는 스타일 조심할 순간 나를 지키는 제품 뼈 상식 BL tech 뼈BTI ${CTA}${HASHTAGS}${Object.values(info).join("")}`;
+  await Promise.all(
+    [`900 40px ${SERIF}`, `700 40px ${SERIF}`, `600 40px ${SERIF}`, `400 40px ${SANS}`, `500 40px ${SANS}`, `700 40px ${SANS}`, `600 40px ${DISPLAY}`].map(
+      (f) => document.fonts.load(f, text),
+    ),
+  ).catch(() => {});
   const img = await loadImage(imageSrc);
   const [card, og] = await Promise.all([toJpeg(drawPortrait(img, info)), toJpeg(drawLandscape(img, info))]);
   return { card, og };
@@ -34,93 +46,123 @@ function drawPortrait(img: HTMLImageElement, info: CardInfo) {
   const H = 1500;
   const { canvas, ctx } = blank(W, H);
 
-  // 상단: 그림
-  const side = 820;
-  const ix = (W - side) / 2;
-  const iy = 44;
-  ctx.drawImage(img, ix, iy, side, side);
-  ctx.lineWidth = 5;
-  ctx.strokeStyle = "#000";
-  ctx.strokeRect(ix, iy, side, side);
+  // 상단 브랜드
+  ctx.textAlign = "center";
+  ctx.fillStyle = GOLD;
+  ctx.font = `600 30px ${DISPLAY}`;
+  spaced(ctx, "BL TECH  ·  뼈BTI", W / 2, 64, 6);
+
+  // 액자 속 그림
+  drawFramed(ctx, img, 230, 96, 740);
 
   // 제목
   ctx.textAlign = "center";
-  ctx.fillStyle = "#000";
-  const title = `🦴 나는 206개 뼈 중 【${info.short}】`;
-  ctx.font = `700 ${fitFont(ctx, title, W - 120, 60)}px ${FONT}`;
-  ctx.fillText(title, W / 2, 950);
+  ctx.fillStyle = INK;
+  const title = `나는 206개 뼈 중 「${info.short}」`;
+  ctx.font = `900 ${fitFont(ctx, title, W - 160, 60, `900 {s}px ${SERIF}`)}px ${SERIF}`;
+  ctx.fillText(title, W / 2, 940);
 
-  ctx.fillStyle = NAVY;
-  const nick = `"${info.nickname}"`;
-  ctx.font = `700 ${fitFont(ctx, nick, W - 160, 50)}px ${FONT}`;
-  ctx.fillText(nick, W / 2, 1018);
+  ctx.fillStyle = GOLD;
+  const nick = `“${info.nickname}”`;
+  ctx.font = `600 ${fitFont(ctx, nick, W - 200, 42, `600 {s}px ${SERIF}`)}px ${SERIF}`;
+  ctx.fillText(nick, W / 2, 1000);
 
-  ctx.fillStyle = "#000";
-  ctx.fillRect(90, 1048, W - 180, 3);
+  ctx.fillStyle = GOLD;
+  ctx.fillRect(W / 2 - 50, 1030, 100, 2);
 
   // 항목
   ctx.textAlign = "left";
   const rows: [string, string][] = [
-    ["💼 일하는 스타일", info.style],
-    ["⚠️ 조심할 순간", info.injury],
-    ["🛡️ 나를 지키는 보조기", info.brace],
-    ["💡 뼈 상식", info.fact],
+    ["회사 속 역할", info.role],
+    ["일하는 스타일", info.style],
+    ["조심할 순간", info.injury],
+    ["나를 지키는 제품", info.brace],
+    ["뼈 상식", info.fact],
   ];
-  let y = 1106;
+  let y = 1090;
   for (const [label, value] of rows) {
-    drawRow(ctx, label, value, 90, y, W - 180, 38);
-    y += 56;
+    drawRow(ctx, label, value, 130, y, W - 260);
+    y += 52;
   }
 
   // 버튼
-  drawButton(ctx, CTA, 150, 1316, W - 300, 78, 40);
+  drawButton(ctx, CTA, (W - 660) / 2, 1352, 660, 74, 32);
 
   // 해시태그
   ctx.textAlign = "center";
-  ctx.fillStyle = "#555";
-  ctx.font = `700 30px ${FONT}`;
-  ctx.fillText(HASHTAGS, W / 2, 1458);
+  ctx.fillStyle = MUTED;
+  ctx.font = `500 26px ${SANS}`;
+  ctx.fillText(HASHTAGS, W / 2, 1470);
   return canvas;
 }
 
 function drawLandscape(img: HTMLImageElement, info: CardInfo) {
   const W = 1200;
   const H = 630;
-  const pad = 24;
   const { canvas, ctx } = blank(W, H);
 
-  const side = H - pad * 2;
-  ctx.drawImage(img, pad, pad, side, side);
-  ctx.lineWidth = 4;
-  ctx.strokeStyle = "#000";
-  ctx.strokeRect(pad, pad, side, side);
+  drawFramed(ctx, img, 44, 44, 542);
 
-  const x = pad * 2 + side + 6;
-  const maxW = W - x - pad;
+  const x = 650;
+  const maxW = W - x - 50;
   ctx.textAlign = "left";
 
-  ctx.fillStyle = "#555";
-  ctx.font = `700 30px ${FONT}`;
-  ctx.fillText("🦴 나는 206개 뼈 중", x, 76);
+  ctx.fillStyle = GOLD;
+  ctx.font = `600 24px ${DISPLAY}`;
+  spaced(ctx, "BL TECH  ·  뼈BTI", x, 82, 4);
 
-  ctx.fillStyle = "#000";
-  const big = `【${info.short}】`;
-  ctx.font = `700 ${fitFont(ctx, big, maxW, 76)}px ${FONT}`;
-  ctx.fillText(big, x - 8, 160);
+  ctx.fillStyle = MUTED;
+  ctx.font = `500 26px ${SANS}`;
+  ctx.fillText("나는 206개 뼈 중", x, 140);
 
-  ctx.fillStyle = NAVY;
-  const nick = `"${info.nickname}"`;
-  ctx.font = `700 ${fitFont(ctx, nick, maxW, 40)}px ${FONT}`;
-  ctx.fillText(nick, x, 216);
+  ctx.fillStyle = INK;
+  const big = `「${info.short}」`;
+  ctx.font = `900 ${fitFont(ctx, big, maxW, 70, `900 {s}px ${SERIF}`)}px ${SERIF}`;
+  ctx.fillText(big, x - 14, 222);
 
-  ctx.fillStyle = "#000";
-  ctx.fillRect(x, 238, maxW, 3);
+  ctx.fillStyle = GOLD;
+  const nick = `“${info.nickname}”`;
+  ctx.font = `600 ${fitFont(ctx, nick, maxW, 34, `600 {s}px ${SERIF}`)}px ${SERIF}`;
+  ctx.fillText(nick, x, 276);
 
-  ctx.font = `400 32px ${FONT}`;
-  wrap(ctx, info.oneLiner, maxW, 4).forEach((line, i) => ctx.fillText(line, x, 290 + i * 40));
+  ctx.fillStyle = INK_SOFT;
+  ctx.font = `700 26px ${SANS}`;
+  ctx.fillText(`회사 속 역할 · ${info.roleName}`, x, 330);
 
-  drawButton(ctx, CTA, x, H - pad - 84, maxW, 76, 30);
+  ctx.fillStyle = INK;
+  ctx.font = `400 26px ${SERIF}`;
+  wrap(ctx, info.oneLiner, maxW, 3).forEach((line, i) => ctx.fillText(line, x, 384 + i * 38));
+
+  drawButton(ctx, CTA, x, H - 44 - 70, maxW, 70, 26);
   return canvas;
+}
+
+/** 금빛 액자 + 아이보리 매트 안에 그림 */
+function drawFramed(ctx: CanvasRenderingContext2D, img: HTMLImageElement, x: number, y: number, size: number) {
+  const frame = Math.round(size * 0.022);
+  const mat = Math.round(size * 0.045);
+
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,0.28)";
+  ctx.shadowBlur = 34;
+  ctx.shadowOffsetY = 16;
+  const g = ctx.createLinearGradient(x, y, x + size, y + size);
+  g.addColorStop(0, "#d6b678");
+  g.addColorStop(0.38, "#9a7440");
+  g.addColorStop(0.62, "#e2c78f");
+  g.addColorStop(1, "#8f6a36");
+  ctx.fillStyle = g;
+  ctx.fillRect(x, y, size, size);
+  ctx.restore();
+
+  ctx.fillStyle = PAPER;
+  ctx.fillRect(x + frame, y + frame, size - frame * 2, size - frame * 2);
+
+  const inner = size - (frame + mat) * 2;
+  ctx.drawImage(img, x + frame + mat, y + frame + mat, inner, inner);
+  ctx.strokeStyle = LINE;
+  ctx.lineWidth = 2;
+  ctx.strokeRect(x + frame + mat, y + frame + mat, inner, inner);
 }
 
 function blank(w: number, h: number) {
@@ -128,41 +170,75 @@ function blank(w: number, h: number) {
   canvas.width = w;
   canvas.height = h;
   const ctx = canvas.getContext("2d")!;
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle = BG;
   ctx.fillRect(0, 0, w, h);
   ctx.textBaseline = "alphabetic";
   return { canvas, ctx };
 }
 
-function drawRow(ctx: CanvasRenderingContext2D, label: string, value: string, x: number, y: number, maxW: number, size: number) {
-  const head = `${label} : `;
-  ctx.font = `700 ${size}px ${FONT}`;
-  const headW = ctx.measureText(head).width;
-  ctx.fillStyle = NAVY;
-  ctx.fillText(head, x, y);
+/** 자간을 벌려 그리기 (canvas letterSpacing 미지원 브라우저 대비) */
+function spaced(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, gap: number) {
+  const chars = Array.from(text);
+  const widths = chars.map((c) => ctx.measureText(c).width);
+  const total = widths.reduce((a, b) => a + b, 0) + gap * (chars.length - 1);
+  const align = ctx.textAlign;
+  let cx = align === "center" ? x - total / 2 : x;
+  ctx.textAlign = "left";
+  chars.forEach((c, i) => {
+    ctx.fillText(c, cx, y);
+    cx += widths[i] + gap;
+  });
+  ctx.textAlign = align;
+}
 
-  ctx.fillStyle = "#000";
-  let vs = size;
+function drawRow(ctx: CanvasRenderingContext2D, label: string, value: string, x: number, y: number, maxW: number) {
+  const labelW = 250;
+  ctx.fillStyle = GOLD;
+  ctx.font = `700 26px ${SANS}`;
+  ctx.fillText(label, x, y);
+
+  ctx.fillStyle = INK;
+  const vw = maxW - labelW;
+  let vs = 31;
   do {
-    ctx.font = `400 ${vs}px ${FONT}`;
-  } while (ctx.measureText(value).width > maxW - headW && (vs -= 2) >= 28);
-  ctx.fillText(wrap(ctx, value, maxW - headW, 1)[0] ?? "", x + headW, y);
+    ctx.font = `500 ${vs}px ${SANS}`;
+  } while (ctx.measureText(value).width > vw && (vs -= 1) >= 25);
+  ctx.fillText(wrap(ctx, value, vw, 1)[0] ?? "", x + labelW, y);
+
+  ctx.fillStyle = LINE;
+  ctx.fillRect(x, y + 17, maxW, 1);
 }
 
 function drawButton(ctx: CanvasRenderingContext2D, label: string, x: number, y: number, w: number, h: number, size: number) {
-  ctx.fillStyle = "#000";
-  ctx.fillRect(x + 6, y + 6, w, h);
-  ctx.fillStyle = YELLOW;
-  ctx.fillRect(x, y, w, h);
-  ctx.lineWidth = 4;
-  ctx.strokeStyle = "#000";
-  ctx.strokeRect(x, y, w, h);
-  ctx.fillStyle = "#000";
-  ctx.font = `700 ${fitFont(ctx, label, w - 30, size)}px ${FONT}`;
+  ctx.save();
+  ctx.shadowColor = "rgba(21,35,63,0.35)";
+  ctx.shadowBlur = 20;
+  ctx.shadowOffsetY = 8;
+  ctx.fillStyle = INK;
+  roundRect(ctx, x, y, w, h, h / 2);
+  ctx.fill();
+  ctx.restore();
+
+  ctx.fillStyle = "#fdf8ee";
+  ctx.font = `700 ${fitFont(ctx, label, w - 50, size, `700 {s}px ${SERIF}`)}px ${SERIF}`;
   const prev = ctx.textAlign;
   ctx.textAlign = "center";
-  ctx.fillText(label, x + w / 2, y + h / 2 + size * 0.33);
+  ctx.fillText(label, x + w / 2, y + h / 2 + size * 0.36);
   ctx.textAlign = prev;
+}
+
+function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+  ctx.beginPath();
+  if (typeof ctx.roundRect === "function") {
+    ctx.roundRect(x, y, w, h, r);
+    return;
+  }
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
 }
 
 /** 띄어쓰기 기준 줄바꿈, 한 단어가 너무 길면 글자 단위로 자른다 */
@@ -196,10 +272,11 @@ function wrap(ctx: CanvasRenderingContext2D, text: string, maxW: number, maxLine
   return out;
 }
 
-function fitFont(ctx: CanvasRenderingContext2D, text: string, maxW: number, start: number) {
+/** 글자가 maxW 안에 들어오는 가장 큰 크기. font 템플릿의 {s}에 크기가 들어간다 */
+function fitFont(ctx: CanvasRenderingContext2D, text: string, maxW: number, start: number, font: string) {
   let size = start;
   while (size > 18) {
-    ctx.font = `700 ${size}px ${FONT}`;
+    ctx.font = font.replace("{s}", String(size));
     if (ctx.measureText(text).width <= maxW) break;
     size -= 2;
   }
@@ -226,6 +303,8 @@ export async function shrinkPhoto(file: File, max = 1024): Promise<Blob> {
   const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
   const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
   const { canvas, ctx } = blank(Math.round(bitmap.width * scale), Math.round(bitmap.height * scale));
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   bitmap.close();
   return toJpeg(canvas);
