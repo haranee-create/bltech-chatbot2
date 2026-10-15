@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { meta, ogUrl } = share;
   const role = getRole(meta.roleId);
   const title = `나의 업무 유형은 「${role?.name ?? meta.short}」 · 닮은 뼈 ${meta.short}`;
-  const description = `${meta.one_liner} · 나는 어떤 유형, 어떤 뼈일까? #뼈BTI #비엘테크`;
+  const description = `${meta.one_liner} · 나의 뼈BTI는? #뼈BTI #비엘테크`;
   return {
     title,
     description,
@@ -59,7 +59,7 @@ export default async function SharePage({ params }: Props) {
 
       <div className="cta">
         <Link href="/" className="btn btn-primary">
-          나의 업무 유형과 뼈 알아보기 →
+          나의 뼈BTI 알아보기 →
         </Link>
       </div>
 

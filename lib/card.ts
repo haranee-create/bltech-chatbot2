@@ -12,7 +12,7 @@ const MUTED = "#7a7266";
 const LINE = "#e5dccb";
 const GOLD = "#a8844c";
 
-export const CTA = "나의 업무 유형과 뼈 알아보기 →";
+export const CTA = "나의 뼈BTI 알아보기 →";
 export const HASHTAGS = "#뼈BTI #비엘테크 #뼈대있는회사";
 
 export type CardInfo = {

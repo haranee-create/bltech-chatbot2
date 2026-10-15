@@ -11,7 +11,7 @@ export default function NotFound() {
       </section>
       <div className="cta">
         <Link href="/" className="btn btn-primary">
-          나는 어떤 뼈일까? 테스트하기 →
+          나의 뼈BTI 알아보기 →
         </Link>
       </div>
     </Shell>

@@ -6,7 +6,7 @@ import { BONES, PRODUCTS, REGION_LABEL, YOUTUBE_CHANNEL, getBone, type Region } 
 import { ROLES, roleOfBone } from "@/lib/roles";
 
 export const metadata: Metadata = {
-  title: "뼈BTI 제품 도감 — 10가지 업무 유형과 뼈, 우리 제품",
+  title: "제품 도감 — 나의 뼈BTI는?",
   description: "업무 유형마다 닮은 뼈, 그 뼈를 지켜주는 비엘테크 제품과 시술 방법, 시술 영상을 모았어요.",
 };
 
@@ -79,7 +79,7 @@ export default function GuidePage() {
       </p>
       <div className="cta">
         <Link href="/" className="btn btn-primary">
-          나의 업무 유형과 뼈 알아보기 →
+          나의 뼈BTI 알아보기 →
         </Link>
       </div>
       <p className="hint">교육용 안내이며 의료 진단·치료 지침이 아닙니다. 실제 시술은 의료진의 판단에 따릅니다.</p>

@@ -5,8 +5,8 @@ const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ||
   (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "http://localhost:3000");
 
-const title = "뼈BTI — 나는 어떤 뼈일까?";
-const description = "사진 한 장과 질문 3개로 알아보는, 당신을 닮은 뼈와 회사 속 나의 역할 | 비엘테크";
+const title = "나의 뼈BTI는?";
+const description = "핵심 질문 7개로 알아보는 나의 업무 유형, 그런 나를 닮은 뼈와 그 뼈를 지키는 우리 제품 | 비엘테크";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

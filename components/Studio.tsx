@@ -111,7 +111,7 @@ export default function Studio() {
 
   function postText() {
     if (!result) return "";
-    return `저는 "${result.role.name}"이래요. 닮은 뼈는 ${result.bone.short} 🦴 여러분은 무슨 유형이에요?\n#뼈BTI #비엘테크 #뼈대있는회사`;
+    return `저는 "${result.role.name}"이래요. 닮은 뼈는 ${result.bone.short} 🦴 여러분의 뼈BTI는요?\n#뼈BTI #비엘테크 #뼈대있는회사`;
   }
 
   async function uploadShare(): Promise<string | null> {
@@ -338,7 +338,7 @@ export default function Studio() {
       <section className="hero">
         <p className="eyebrow">BL tech · Employee Edition</p>
         <h1>
-          나는 어떤 <em>뼈</em>일까?
+          나의 <em>뼈</em>BTI는?
         </h1>
         <p className="hero-sub">
           핵심 질문 {QUESTIONS.length}개로 알아보는 나의 업무 유형, 그리고 그런 나를 닮은 뼈와 그 뼈를 지키는 우리 제품
@@ -420,7 +420,7 @@ export default function Studio() {
       ) : (
         <div className="cta">
           <button className="btn btn-primary" onClick={generate} disabled={!ready}>
-            내 유형과 뼈 알아보기
+            나의 뼈BTI 알아보기
           </button>
           {!ready && (
             <p className="hint">
