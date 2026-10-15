@@ -55,10 +55,10 @@ export const PRODUCTS = {
     facts:
       "끈적임 적은 수경화성 레진과 직접 직조한 프리미엄 원단으로 만든 글로벌 스탠다드 캐스트(깁스 테이프). 캐스트 쏘로 제거가 쉽고 타사 대비 가벼운 중량",
   },
-  "custom-brace": {
-    name: "NEAL 커스터마이징 브레이스",
+  hydrogel: {
+    name: "비엘테크 하이드로겔 피부보호대",
     facts:
-      "환자 체형 곡선에 맞춰 성형하는 비엘테크 독점 맞춤형 보조기. 무거운 가열 플레이트 없이 물 반 컵이면 되고 성형 후 5분 유지. 허리·손목·무릎·발목 브레이스. 통기성 소재, 세탁·재사용 가능, 가벼운 무게",
+      "비엘테크 신제품. TDS(Transdermal Delivery System) 기술을 활용한 의료기기 1등급 하이드로겔 피부보호대. 생체적합성 시험을 통과해 안전성이 검증됨. 특허받은 고분자 하이드로겔로 민감한 피부에도 자극 없이 부착 가능. (뼈가 아니라 피부를 보호하는 제품이므로 뼈를 고정하거나 치료한다고 말하지 말 것)",
   },
 } as const;
 
@@ -86,9 +86,9 @@ export const BONES: Bone[] = [
     nameEn: "tibia (shin bone)",
     fact: "체중 대부분을 받치는 다리의 기둥. 피부 바로 아래라 부딪히면 유독 아픔",
     injury: "책상 모서리, 축구",
-    brace: "NEAL Pre-mold Splint (Short Leg 하지 부목)",
-    product: "pre-mold",
-    braceEn: "pre-molded leg splint with velcro straps",
+    brace: "하이드로겔 피부보호대 (비엘테크 신제품)",
+    product: "hydrogel",
+    braceEn: "soft translucent hydrogel skin patch",
   },
   {
     id: "lumbar",
@@ -98,8 +98,7 @@ export const BONES: Bone[] = [
     nameEn: "lumbar vertebra (lower back bone)",
     fact: "5개. 상체 무게를 떠받치는 허리의 중심",
     injury: "무거운 물건을 허리로 들 때",
-    brace: "NEAL 커스터마이징 허리 브레이스",
-    product: "custom-brace",
+    brace: "요추 보조기",
     braceEn: "lumbar back support brace",
   },
   {
@@ -192,9 +191,9 @@ export const BONES: Bone[] = [
     nameEn: "fibula (calf bone)",
     fact: "체중은 적게 받지만 발목 안정에 중요. 뼈 이식용으로 쓰이기도 함",
     injury: "발목 접질림과 함께 골절",
-    brace: "NEAL 커스터마이징 발목 브레이스",
-    product: "custom-brace",
-    braceEn: "ankle brace",
+    brace: "NEAL Pre-mold Splint (Short Leg 하지 부목)",
+    product: "pre-mold",
+    braceEn: "pre-molded leg splint with velcro straps",
   },
   {
     id: "skull",
