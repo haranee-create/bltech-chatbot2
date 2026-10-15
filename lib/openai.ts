@@ -1,5 +1,5 @@
 import OpenAI, { APIError, toFile } from "openai";
-import { BONES, TYPE_LABEL, type Bone } from "./bones";
+import { BONES, PRODUCTS, TYPE_LABEL, type Bone } from "./bones";
 import type { BoneWriting } from "./types";
 
 const IMAGE_MODEL = process.env.IMAGE_MODEL || "gpt-image-2.5-sunburst";
@@ -43,7 +43,7 @@ const WRITING_SCHEMA = {
     personality: str("이 뼈처럼 일하는 당신의 스타일 (2~3문장, 뼈의 실제 기능에 빗댈 것)"),
     fun_fact: str("동료에게 자랑할 수 있는 이 뼈의 반전 상식 (1문장, 데이터에 있는 사실만)"),
     weakness: str("당신(=이 뼈)이 조심해야 할 순간 (1문장, 잘 다치는 상황을 직장 상황에 빗대되 실제 상황도 언급)"),
-    guardian: str("당신을 지켜주는 보조기 소개 (1~2문장, 우리 회사가 만드는 제품이라는 자부심이 느껴지게)"),
+    guardian: str("당신을 지켜주는 보조기 소개 (1~2문장, [보조기 안내]를 따를 것)"),
     bone_tip: str("오늘의 뼈 건강 한마디 (예방 습관 1가지)"),
     best_partner: str("업무 궁합이 좋은 뼈와 이유 (1문장, [다른 뼈 목록] 중에서)"),
     card_style: str("공유 카드용 '일하는 스타일' 요약 (18자 이내, 예: '팀과 팀을 잇는 유일한 다리')"),
@@ -55,24 +55,33 @@ const SYSTEM = `너는 의료기기 회사 '비엘테크' 직원들을 위한 �
 정형외과 보조기를 만드는 회사 직원들이 웃으면서 뼈 상식과 우리 제품을 자연스럽게 배우게 하는 것이 목표다.
 
 규칙:
-1. 의학적 사실은 반드시 [뼈 데이터]에 있는 내용만 사용한다. 새로운 의학 사실을 지어내지 않는다.
+1. 의학적 사실과 제품 특징은 반드시 [뼈 데이터]와 [보조기 안내]에 있는 내용만 사용한다. 새로운 의학 사실이나 제품 기능을 지어내지 않는다.
 2. 뼈의 특징을 직장인의 성격·업무 스타일에 빗대 재치 있게 표현한다. (회의, 결재, 야근, 점심, 커피 등 사무실/공장 소재 활용)
 3. 외모, 나이, 체형, 성별, 질병을 놀리지 않는다.
 4. 진단이나 치료 조언을 하지 않는다. '뼈 건강 한마디'는 예방 습관(스트레칭, 안전화, 귀마개, 낙상 주의 등)만 말한다.
 5. 존댓말, 밝은 톤, 각 항목은 짧게. 반드시 JSON으로만 답한다.`;
 
-const EXAMPLE = `{"bone":"쇄골(빗장뼈)","nickname":"부서 간 빗장","one_liner":"당신은 팀과 팀을 잇는 유일한 다리, 쇄골입니다!","personality":"쇄골이 팔과 몸통을 잇는 유일한 뼈 다리이듯, 당신 없이는 생산팀과 관리팀이 대화를 못 합니다. 메신저 알림이 가장 많이 울리는 사람, 바로 당신이죠.","fun_fact":"쇄골은 팔을 몸통에 연결하는 유일한 뼈 연결고리랍니다.","weakness":"모든 부담을 어깨로 받다가 쓰러질 수 있어요. 실제로도 넘어지며 어깨로 떨어질 때 쇄골 골절이 흔합니다.","guardian":"8자 모양 쇄골 밴드가 당신의 어깨를 뒤에서 붙잡아 줍니다. 무너지려는 자세를 바로잡는 것, 우리가 만드는 보조기의 일이죠.","bone_tip":"오늘은 어깨를 뒤로 크게 10번 돌려주세요.","best_partner":"견갑골 — 17개 근육의 허브인 견갑골과 함께라면 어떤 협업도 거뜬합니다.","card_style":"팀과 팀을 잇는 유일한 다리","card_fact":"쇄골은 팔과 몸통을 잇는 유일한 뼈!"}`;
+const EXAMPLE = `{"bone":"쇄골(빗장뼈)","nickname":"부서 간 빗장","one_liner":"당신은 팀과 팀을 잇는 유일한 다리, 쇄골입니다!","personality":"쇄골이 팔과 몸통을 잇는 유일한 뼈 다리이듯, 당신 없이는 생산팀과 관리팀이 대화를 못 합니다. 메신저 알림이 가장 많이 울리는 사람, 바로 당신이죠.","fun_fact":"쇄골은 팔을 몸통에 연결하는 유일한 뼈 연결고리랍니다.","weakness":"모든 부담을 어깨로 받다가 쓰러질 수 있어요. 실제로도 넘어지며 어깨로 떨어질 때 쇄골 골절이 흔합니다.","guardian":"8자 모양 쇄골 밴드가 당신의 어깨를 뒤에서 붙잡아 줍니다. 무너지려는 자세를 바로잡는 것, 그게 보조기의 일이죠.","bone_tip":"오늘은 어깨를 뒤로 크게 10번 돌려주세요.","best_partner":"견갑골 — 17개 근육의 허브인 견갑골과 함께라면 어떤 협업도 거뜬합니다.","card_style":"팀과 팀을 잇는 유일한 다리","card_fact":"쇄골은 팔과 몸통을 잇는 유일한 뼈!"}`;
 
 export async function writeBoneResult(bone: Bone): Promise<BoneWriting> {
   const others = BONES.filter((b) => b.id !== bone.id)
     .map((b) => `- ${b.name}: ${b.fact}`)
     .join("\n");
 
+  const product = bone.product ? PRODUCTS[bone.product] : null;
+  const guardianGuide = product
+    ? `지켜주는 보조기는 비엘테크 제품 '${product.name}'이다. 제품 특징: ${product.facts}
+guardian은 반드시 '${product.name}'라는 제품명을 그대로 포함하고, 위 특징 중 하나를 골라 우리 회사가 만드는 제품이라는 자부심이 느껴지게 소개한다.`
+    : `지켜주는 보조기('${bone.brace}')는 비엘테크 제품이 아니다. 우리 회사 제품이라고 말하지 말고, 예방·보호 용품으로서 유쾌하게 소개한다.`;
+
   const user = `[뼈 데이터]
 뼈: ${bone.name}
 하는 일/반전 상식: ${bone.fact}
 잘 다치는 상황: ${bone.injury}
 지켜주는 보조기: ${bone.brace}
+
+[보조기 안내]
+${guardianGuide}
 
 [참가자 응답 유형]: ${TYPE_LABEL[bone.type]}
 

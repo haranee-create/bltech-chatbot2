@@ -46,7 +46,7 @@ http://localhost:3000 접속.
 
 | 파일 | 역할 |
 | --- | --- |
-| `lib/bones.ts` | **뼈 데이터 시트 · 질문 3개 · 매칭 규칙** — 보조기 칸(`brace`)을 자사 제품명으로 바꾸세요 |
+| `lib/bones.ts` | **뼈 데이터 시트 · 비엘테크 제품(PRODUCTS) · 질문 3개 · 매칭 규칙** — 제품 정보는 www.bl-tech.co.kr 기준 |
 | `lib/openai.ts` | 작문(gpt-5.6-terra) / 그림(gpt-image-2.5-sunburst) 호출과 프롬프트 |
 | `lib/ratelimit.ts` | 1인(IP)당 하루 생성 횟수 제한 |
 | `app/api/generate` | 사진 + 답변 → 뼈 결정, 그림 + 결과 글 생성 API |

@@ -142,7 +142,10 @@ function drawRow(ctx: CanvasRenderingContext2D, label: string, value: string, x:
   ctx.fillText(head, x, y);
 
   ctx.fillStyle = "#000";
-  ctx.font = `400 ${size}px ${FONT}`;
+  let vs = size;
+  do {
+    ctx.font = `400 ${vs}px ${FONT}`;
+  } while (ctx.measureText(value).width > maxW - headW && (vs -= 2) >= 28);
   ctx.fillText(wrap(ctx, value, maxW - headW, 1)[0] ?? "", x + headW, y);
 }
 
