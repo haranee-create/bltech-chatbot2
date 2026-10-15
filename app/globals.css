@@ -270,6 +270,45 @@ body {
   color: #666;
 }
 
+/* ── 제품 사용법 / 시술 영상 ─────────────── */
+.use { margin-top: 26px; border: 3px solid #000; padding: 16px; background: #fffbe0; }
+.use-compact { margin-top: 10px; padding: 12px; }
+.use-title { font-family: var(--pen); font-size: 28px; margin: 0 0 10px; }
+.use-kind { margin: 0; font-size: 13px; color: #555; }
+.use-name { margin: 2px 0 6px; font-size: 20px; font-weight: 700; }
+.use-name a { color: var(--navy); }
+.use-howto, .use-area { margin: 0; line-height: 1.7; font-size: 15px; word-break: keep-all; }
+.use-procedure { margin-top: 14px; padding-top: 12px; border-top: 2px dashed #999; }
+.use-proc-name { margin: 0 0 4px; font-size: 16px; }
+.use-proc-name span { color: #555; font-size: 14px; }
+.use-more { text-align: center; font-size: 14px; margin: 18px 0 0; }
+.use-compact .use-more { text-align: left; margin-top: 10px; }
+.yt { margin: 12px auto 0; max-width: 560px; }
+.use-compact .yt { max-width: 440px; margin-left: 0; }
+.yt-frame { position: relative; aspect-ratio: 16 / 9; background: #000; border: 2px solid #000; }
+.yt-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.yt-thumb { position: absolute; inset: 0; padding: 0; border: 0; background: #000; cursor: pointer; }
+.yt-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0.9; }
+.yt-play {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 64px; height: 44px; display: grid; place-items: center;
+  background: #e00; color: #fff; font-size: 22px; border: 2px solid #000; box-shadow: 3px 3px 0 #000;
+}
+.yt-thumb:hover .yt-play, .yt-thumb:focus-visible .yt-play { background: #b00; }
+.yt figcaption { font-size: 13px; color: #555; margin-top: 6px; }
+.guide-link { text-align: center; margin: 14px 0 0; font-size: 15px; font-weight: 700; }
+.guide-link a { color: var(--navy); }
+
+/* ── 제품 도감 ───────────────────────── */
+.guide-toc { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 4px 0 8px; }
+.guide-toc a {
+  font-size: 14px; color: #000; text-decoration: none; background: #fff;
+  border: 2px solid #000; padding: 3px 9px; box-shadow: 2px 2px 0 #000;
+}
+.guide-bone { margin: 0 0 22px; scroll-margin-top: 12px; }
+.guide-bone h3 { font-family: var(--pen); font-size: 26px; margin: 0 0 4px; }
+.guide-fact { margin: 0; font-size: 14px; color: #333; line-height: 1.7; word-break: keep-all; }
+
 @media (max-width: 640px) {
   .desktop { padding: 12px 8px 32px; }
   .canvas-area { padding: 20px 14px; }

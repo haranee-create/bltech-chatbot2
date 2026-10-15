@@ -32,6 +32,7 @@ export type GenerateResponse = {
 };
 
 export type ShareMeta = {
+  boneId: string;
   short: string;
   name: string;
   typeLabel: string;

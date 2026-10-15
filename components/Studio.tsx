@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import PaintWindow from "./PaintWindow";
+import ProductUse from "./ProductUse";
 import { makeShareCards, shrinkPhoto } from "@/lib/card";
 import { QUESTIONS, type BoneType } from "@/lib/bones";
 import type { GenerateResponse } from "@/lib/types";
@@ -123,6 +125,7 @@ export default function Studio() {
     fd.append(
       "meta",
       JSON.stringify({
+        boneId: bone.id,
         short: bone.short,
         name: bone.name,
         typeLabel: bone.typeLabel,
@@ -236,6 +239,11 @@ export default function Studio() {
           <dd>{w.bone_tip}</dd>
         </dl>
 
+        <ProductUse boneId={bone.id} />
+        <p className="guide-link">
+          <Link href="/guide">📚 다른 뼈를 지키는 우리 제품도 보기 (제품 도감) →</Link>
+        </p>
+
         <div className="actions">
           <button className="btn btn-fb" onClick={shareFacebook} disabled={!cards || sharing}>
             {sharing ? "공유 준비 중..." : "동료는 무슨 뼈일까? 페이스북 공유"}
@@ -278,6 +286,9 @@ export default function Studio() {
           나는 어떤 <span className="hl">뼈</span>일까? 🦴
         </h1>
         <p>사진 한 장과 질문 3개로 알아보는, 당신을 닮은 뼈</p>
+        <p className="guide-link">
+          <Link href="/guide">📚 우리 제품은 어디에 어떻게 쓰일까? 제품 도감 보기 →</Link>
+        </p>
       </div>
 
       <h2 className="step">1. 사진 올리기</h2>

@@ -5,6 +5,7 @@ import { cache } from "react";
 import { getShare } from "@/lib/shares";
 import PaintWindow from "@/components/PaintWindow";
 import { Disclaimer } from "@/components/Studio";
+import ProductUse from "@/components/ProductUse";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -49,6 +50,10 @@ export default async function SharePage({ params }: Props) {
           <p>{meta.personality}</p>
           <p>💡 {meta.fun_fact}</p>
         </section>
+        {meta.boneId && <ProductUse boneId={meta.boneId} />}
+        <p className="guide-link">
+          <Link href="/guide">📚 우리 제품 도감 보기 →</Link>
+        </p>
         <div className="actions">
           <Link href="/" className="btn btn-primary">
             나는 어떤 뼈일까? 테스트하기 →

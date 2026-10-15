@@ -9,6 +9,9 @@
 - 뼈 결정: 질문 3개 답 중 가장 많이 나온 유형(동점이면 랜덤) → 그 유형의 뼈 풀에서 랜덤 1개.
 - 모든 뼈는 그 뼈를 지켜주는 **비엘테크 제품**(NEAL/SMILE 캐스트·부목, 하이드로겔 피부보호대)과 짝지어져 있고,
   결과 글은 홈페이지 제품 소개에 나온 특징만으로 제품을 소개합니다.
+- **제품 교육:** 결과 화면에 "🏥 우리 제품은 이렇게 쓰여요" — 제품 사용법, 그 부위를 고정하는 시술(Short Arm Cast,
+  Long Leg Splint 등)과 **비엘테크 공식 유튜브 시술 영상**이 함께 나옵니다.
+- **제품 도감(`/guide`):** 모든 뼈 → 제품 → 시술 → 영상을 한 페이지에서 볼 수 있는 신입사원 교육용 페이지.
   **사진은 그림에만 쓰고, 얼굴로 성격을 판단하지 않습니다.**
 - 그림: `gpt-image-2.5-sunburst` (Image API `images.edit`, 업로드 사진 기반)
 - 작문: `gpt-5.6-terra` (Responses API, JSON 스키마 구조화 출력, 데이터 시트의 사실만 사용)
@@ -48,7 +51,9 @@ http://localhost:3000 접속.
 
 | 파일 | 역할 |
 | --- | --- |
-| `lib/bones.ts` | **뼈 데이터 시트 · 비엘테크 제품(PRODUCTS) · 질문 3개 · 매칭 규칙** — 제품 정보는 www.bl-tech.co.kr 기준 |
+| `lib/bones.ts` | **뼈 데이터 시트 · 제품(PRODUCTS) · 시술과 영상(PROCEDURES) · 질문 3개 · 매칭 규칙** — 제품은 www.bl-tech.co.kr, 영상은 유튜브 @bltechco.ltd.2093 기준 |
+| `components/ProductUse.tsx` | 제품 사용법 + 시술 설명 + 유튜브 영상(누르면 재생) |
+| `app/guide` | 제품 도감 페이지 |
 | `lib/openai.ts` | 작문(gpt-5.6-terra) / 그림(gpt-image-2.5-sunburst) 호출과 프롬프트 |
 | `lib/ratelimit.ts` | 1인(IP)당 하루 생성 횟수 제한 |
 | `app/api/generate` | 사진 + 답변 → 뼈 결정, 그림 + 결과 글 생성 API |

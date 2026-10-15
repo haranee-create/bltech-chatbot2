@@ -1,5 +1,5 @@
 import OpenAI, { APIError, toFile } from "openai";
-import { BONES, PRODUCTS, TYPE_LABEL, type Bone } from "./bones";
+import { BONES, PROCEDURES, PRODUCTS, TYPE_LABEL, type Bone } from "./bones";
 import type { BoneWriting } from "./types";
 
 const IMAGE_MODEL = process.env.IMAGE_MODEL || "gpt-image-2.5-sunburst";
@@ -69,6 +69,11 @@ export async function writeBoneResult(bone: Bone): Promise<BoneWriting> {
     .join("\n");
 
   const product = PRODUCTS[bone.product];
+  const procedure = bone.procedure ? PROCEDURES[bone.procedure] : null;
+  const procedureLine = procedure
+    ? `
+이 부위를 고정하는 시술: ${procedure.name}(${procedure.ko}) — ${procedure.area} guardian에서 이 시술 이름을 한 번 언급해도 좋다.`
+    : "";
 
   const user = `[뼈 데이터]
 뼈: ${bone.name}
@@ -79,7 +84,7 @@ export async function writeBoneResult(bone: Bone): Promise<BoneWriting> {
 [보조기 안내]
 지켜주는 보조기는 비엘테크 제품 '${product.name}'이다. 제품 특징: ${product.facts}
 guardian은 반드시 '${product.name}'라는 제품명을 그대로 포함하고, 위 특징 중 하나를 골라 우리 회사가 만드는 제품이라는 자부심이 느껴지게 소개한다.
-다른 회사 제품이나 비엘테크가 만들지 않는 보호 용품은 언급하지 않는다.
+다른 회사 제품이나 비엘테크가 만들지 않는 보호 용품은 언급하지 않는다.${procedureLine}
 
 [참가자 응답 유형]: ${TYPE_LABEL[bone.type]}
 

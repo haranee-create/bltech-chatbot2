@@ -26,6 +26,7 @@ export async function POST(req: Request) {
   try {
     const m = JSON.parse(metaRaw);
     meta = {
+      boneId: clip(m.boneId, 30),
       short: clip(m.short, 20),
       name: clip(m.name, 40),
       typeLabel: clip(m.typeLabel, 10),
