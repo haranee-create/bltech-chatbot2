@@ -61,18 +61,14 @@ const SYSTEM = `너는 의료기기 회사 '비엘테크' 직원들을 위한 �
 4. 진단이나 치료 조언을 하지 않는다. '뼈 건강 한마디'는 예방 습관(스트레칭, 안전화, 귀마개, 낙상 주의 등)만 말한다.
 5. 존댓말, 밝은 톤, 각 항목은 짧게. 반드시 JSON으로만 답한다.`;
 
-const EXAMPLE = `{"bone":"쇄골(빗장뼈)","nickname":"부서 간 빗장","one_liner":"당신은 팀과 팀을 잇는 유일한 다리, 쇄골입니다!","personality":"쇄골이 팔과 몸통을 잇는 유일한 뼈 다리이듯, 당신 없이는 생산팀과 관리팀이 대화를 못 합니다. 메신저 알림이 가장 많이 울리는 사람, 바로 당신이죠.","fun_fact":"쇄골은 팔을 몸통에 연결하는 유일한 뼈 연결고리랍니다.","weakness":"모든 부담을 어깨로 받다가 쓰러질 수 있어요. 실제로도 넘어지며 어깨로 떨어질 때 쇄골 골절이 흔합니다.","guardian":"8자 모양 쇄골 밴드가 당신의 어깨를 뒤에서 붙잡아 줍니다. 무너지려는 자세를 바로잡는 것, 그게 보조기의 일이죠.","bone_tip":"오늘은 어깨를 뒤로 크게 10번 돌려주세요.","best_partner":"견갑골 — 17개 근육의 허브인 견갑골과 함께라면 어떤 협업도 거뜬합니다.","card_style":"팀과 팀을 잇는 유일한 다리","card_fact":"쇄골은 팔과 몸통을 잇는 유일한 뼈!"}`;
+const EXAMPLE = `{"bone":"쇄골(빗장뼈)","nickname":"부서 간 빗장","one_liner":"당신은 팀과 팀을 잇는 유일한 다리, 쇄골입니다!","personality":"쇄골이 팔과 몸통을 잇는 유일한 뼈 다리이듯, 당신 없이는 생산팀과 관리팀이 대화를 못 합니다. 메신저 알림이 가장 많이 울리는 사람, 바로 당신이죠.","fun_fact":"쇄골은 팔을 몸통에 연결하는 유일한 뼈 연결고리랍니다.","weakness":"모든 부담을 어깨로 받다가 쓰러질 수 있어요. 실제로도 넘어지며 어깨로 떨어질 때 쇄골 골절이 흔합니다.","guardian":"(여기에는 [보조기 안내]의 비엘테크 제품을 제품명 그대로 소개)","bone_tip":"오늘은 어깨를 뒤로 크게 10번 돌려주세요.","best_partner":"(여기에는 [다른 뼈 목록]에서 고른 뼈와 이유)","card_style":"팀과 팀을 잇는 유일한 다리","card_fact":"쇄골은 팔과 몸통을 잇는 유일한 뼈!"}`;
 
 export async function writeBoneResult(bone: Bone): Promise<BoneWriting> {
   const others = BONES.filter((b) => b.id !== bone.id)
     .map((b) => `- ${b.name}: ${b.fact}`)
     .join("\n");
 
-  const product = bone.product ? PRODUCTS[bone.product] : null;
-  const guardianGuide = product
-    ? `지켜주는 보조기는 비엘테크 제품 '${product.name}'이다. 제품 특징: ${product.facts}
-guardian은 반드시 '${product.name}'라는 제품명을 그대로 포함하고, 위 특징 중 하나를 골라 우리 회사가 만드는 제품이라는 자부심이 느껴지게 소개한다.`
-    : `지켜주는 보조기('${bone.brace}')는 비엘테크 제품이 아니다. 우리 회사 제품이라고 말하지 말고, 예방·보호 용품으로서 유쾌하게 소개한다.`;
+  const product = PRODUCTS[bone.product];
 
   const user = `[뼈 데이터]
 뼈: ${bone.name}
@@ -81,7 +77,9 @@ guardian은 반드시 '${product.name}'라는 제품명을 그대로 포함하�
 지켜주는 보조기: ${bone.brace}
 
 [보조기 안내]
-${guardianGuide}
+지켜주는 보조기는 비엘테크 제품 '${product.name}'이다. 제품 특징: ${product.facts}
+guardian은 반드시 '${product.name}'라는 제품명을 그대로 포함하고, 위 특징 중 하나를 골라 우리 회사가 만드는 제품이라는 자부심이 느껴지게 소개한다.
+다른 회사 제품이나 비엘테크가 만들지 않는 보호 용품은 언급하지 않는다.
 
 [참가자 응답 유형]: ${TYPE_LABEL[bone.type]}
 

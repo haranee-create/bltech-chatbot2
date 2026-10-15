@@ -1,8 +1,7 @@
 /**
  * 뼈BTI 데이터 시트.
  * 작문 모델은 여기 적힌 사실만 사용합니다 (의학 지식을 지어내지 않도록).
- * `product`가 있는 뼈는 비엘테크 제품(PRODUCTS, www.bl-tech.co.kr 제품 소개 기준)을 보조기로 소개하고,
- * 없는 뼈는 `brace`의 예방 용품을 우리 제품이라고 하지 않고 소개합니다.
+ * 모든 뼈는 그 뼈를 지켜주는 비엘테크 제품(PRODUCTS, www.bl-tech.co.kr 제품 소개 기준)과 짝지어져 있습니다.
  * `braceEn`은 그림에 그릴 소품(영어)입니다.
  */
 
@@ -15,30 +14,22 @@ export const TYPE_LABEL: Record<BoneType, string> = {
   detail: "섬세형",
 };
 
-export type Bone = {
-  id: string;
-  type: BoneType;
-  name: string; // 한국어 이름 (괄호 속 우리말 포함)
-  short: string; // 카드에 넣을 짧은 이름
-  nameEn: string; // 그림 프롬프트용
-  fact: string; // 하는 일 / 반전 상식
-  injury: string; // 잘 다치는 상황
-  brace: string; // 지켜주는 보조기 (카드에 표시)
-  product?: ProductId; // 비엘테크 제품이면 지정
-  braceEn: string; // 그림 속 트로피처럼 든 소품
-};
-
-/** 비엘테크 정형외과 제품 (www.bl-tech.co.kr 제품 소개에 나온 사실만) */
+/** 비엘테크 제품 (www.bl-tech.co.kr 제품 소개에 나온 사실만) */
 export const PRODUCTS = {
   "pre-mold": {
     name: "NEAL Pre-mold Splint",
     facts:
-      "이미 성형되어 있는 정형외과용 부목. 압박 붕대 없이 벨크로로 빠르게 고정해 응급 처치에 적합. 경화 후에도 날카로운 모서리가 생기지 않는 부직포 지지체. Short Arm·Long Arm·Short Leg·Long Leg 등 다양한 규격",
+      "이미 성형되어 있는 정형외과용 부목. 압박 붕대 없이 벨크로로 빠르게 고정해 응급 처치에 적합. 경화 후에도 날카로운 모서리가 생기지 않는 부직포 지지체. Short Arm·Sugar Tong·Long Arm·Short Leg·Long Leg 등 다양한 규격",
   },
   "splint-f-plus": {
     name: "NEAL Splint F PLUS",
     facts:
       "독자 기술의 1겹 유리섬유 기재로 타사 대비 가볍고 강도가 우수한 반고정형 경질 부목. 피부 접촉면은 두껍고 부드러운 부직포라 장시간 착용에도 부담이 적음",
+  },
+  "splint-fg": {
+    name: "SMILE Splint FG",
+    facts:
+      "유리섬유 기재와 피부보호용 패딩으로 이루어진 반고정형 경질 부목. 상·하부 패딩을 분리·재부착할 수 있어 환자 상태에 맞춘 세심한 재단이 가능. 1겹 유리섬유 기재로 가볍고 강도가 우수",
   },
   "splint-n-plus": {
     name: "NEAL Splint N PLUS",
@@ -55,6 +46,16 @@ export const PRODUCTS = {
     facts:
       "끈적임 적은 수경화성 레진과 직접 직조한 프리미엄 원단으로 만든 글로벌 스탠다드 캐스트(깁스 테이프). 캐스트 쏘로 제거가 쉽고 타사 대비 가벼운 중량",
   },
+  "cast-alpha": {
+    name: "NEAL Cast ALPHA",
+    facts:
+      "층간 접착력이 탁월한 유리섬유 캐스트로 견고한 몰딩과 강한 고정이 특징. 수분과 반응하면 미끄러운 촉감이 되어 유연한 몰딩이 가능하고, 여러 겹을 감아도 단단하게 고정됨",
+  },
+  "cast-premium": {
+    name: "SMILE Cast PREMIUM",
+    facts:
+      "비엘테크 독자 직조 기술로 기존 대비 약 10% 더 가볍고 강도는 더 높은 프리미엄 캐스트. 타사 68Tex보다 얇은 50Tex 유리섬유를 직접 직조하고, 날카로운 모서리를 줄여 2차 부상 위험을 낮춤. 유럽·일본 등 글로벌 시장에서 경쟁력 입증",
+  },
   hydrogel: {
     name: "비엘테크 하이드로겔 피부보호대",
     facts:
@@ -64,8 +65,24 @@ export const PRODUCTS = {
 
 export type ProductId = keyof typeof PRODUCTS;
 
+export type Bone = {
+  id: string;
+  type: BoneType;
+  name: string; // 한국어 이름 (괄호 속 우리말 포함)
+  short: string; // 카드에 넣을 짧은 이름
+  nameEn: string; // 그림 프롬프트용
+  fact: string; // 하는 일 / 반전 상식
+  injury: string; // 잘 다치는 상황
+  product: ProductId; // 지켜주는 비엘테크 제품
+  brace: string; // 카드에 표시할 제품명 (규격·용도)
+  braceEn: string; // 그림 속 트로피처럼 든 소품
+};
+
+const CAST_EN = "bright colorful roll of orthopedic casting tape";
+const SPLINT_EN = "padded orthopedic splint";
+
 export const BONES: Bone[] = [
-  // ── 지지형
+  // ── 지지형: 묵묵히 체중을 받치는 뼈
   {
     id: "femur",
     type: "support",
@@ -74,8 +91,8 @@ export const BONES: Bone[] = [
     nameEn: "femur (thigh bone)",
     fact: "몸에서 가장 길고 강한 뼈. 키의 약 1/4",
     injury: "고령자 낙상 시 대퇴골 경부 골절",
-    brace: "NEAL Pre-mold Splint (Long Leg 하지 부목)",
     product: "pre-mold",
+    brace: "NEAL Pre-mold Splint (Long Leg)",
     braceEn: "pre-molded leg splint with velcro straps",
   },
   {
@@ -86,20 +103,9 @@ export const BONES: Bone[] = [
     nameEn: "tibia (shin bone)",
     fact: "체중 대부분을 받치는 다리의 기둥. 피부 바로 아래라 부딪히면 유독 아픔",
     injury: "책상 모서리, 축구",
-    brace: "하이드로겔 피부보호대 (비엘테크 신제품)",
     product: "hydrogel",
+    brace: "하이드로겔 피부보호대 (신제품)",
     braceEn: "soft translucent hydrogel skin patch",
-  },
-  {
-    id: "lumbar",
-    type: "support",
-    name: "요추(허리뼈)",
-    short: "요추",
-    nameEn: "lumbar vertebra (lower back bone)",
-    fact: "5개. 상체 무게를 떠받치는 허리의 중심",
-    injury: "무거운 물건을 허리로 들 때",
-    brace: "요추 보조기",
-    braceEn: "lumbar back support brace",
   },
   {
     id: "calcaneus",
@@ -109,56 +115,60 @@ export const BONES: Bone[] = [
     nameEn: "calcaneus (heel bone)",
     fact: "발목 아래 뼈 중 가장 큼. 걸을 때 첫 충격을 받음",
     injury: "높은 곳에서 떨어질 때",
-    brace: "NEAL Splint F PLUS (하지 부목)",
     product: "splint-f-plus",
-    braceEn: "padded leg splint",
-  },
-  // ── 연결형
-  {
-    id: "clavicle",
-    type: "connect",
-    name: "쇄골(빗장뼈)",
-    short: "쇄골",
-    nameEn: "clavicle (collarbone)",
-    fact: "팔을 몸통에 연결하는 유일한 뼈 다리",
-    injury: "넘어지며 어깨로 떨어질 때",
-    brace: "쇄골 밴드(8자 붕대), 팔걸이",
-    braceEn: "figure-eight clavicle brace",
+    brace: "NEAL Splint F PLUS",
+    braceEn: SPLINT_EN,
   },
   {
-    id: "scapula",
+    id: "talus",
+    type: "support",
+    name: "거골(목말뼈)",
+    short: "거골",
+    nameEn: "talus (ankle bone)",
+    fact: "다리의 체중을 발로 전달하는 발목 관절의 중심 뼈. 근육이 하나도 붙어 있지 않은 특이한 뼈",
+    injury: "높은 곳에서 떨어지거나 발목이 심하게 꺾일 때",
+    product: "cast-alpha",
+    brace: "NEAL Cast ALPHA",
+    braceEn: CAST_EN,
+  },
+  // ── 연결형: 이것과 저것을 잇는 뼈
+  {
+    id: "ulna",
     type: "connect",
-    name: "견갑골(어깨뼈)",
-    short: "견갑골",
-    nameEn: "scapula (shoulder blade)",
-    fact: "약 17개 근육이 붙는 근육들의 허브",
-    injury: "어깨 과사용, 반복 동작",
-    brace: "어깨 보조기",
-    braceEn: "shoulder support brace",
+    name: "척골(자뼈)",
+    short: "척골",
+    nameEn: "ulna (forearm bone)",
+    fact: "요골과 나란히 아래팔을 이루는 짝꿍 뼈. 팔꿈치를 짚으면 만져지는 뾰족한 끝이 바로 척골",
+    injury: "넘어지며 손을 짚을 때 요골과 함께 다치기 쉬움",
+    product: "pre-mold",
+    brace: "NEAL Pre-mold Splint (Sugar Tong)",
+    braceEn: "pre-molded arm splint with velcro straps",
   },
   {
-    id: "hyoid",
+    id: "humerus",
     type: "connect",
-    name: "설골(목뿔뼈)",
-    short: "설골",
-    nameEn: "hyoid bone",
-    fact: "다른 뼈와 관절을 이루지 않는 유일한 뼈. 말하고 삼키는 데 관여",
-    injury: "거의 다치지 않음 (독립적 존재)",
-    brace: "해당 없음 — \"자유로운 영혼\"",
-    braceEn: "small golden trophy cup",
+    name: "상완골(위팔뼈)",
+    short: "상완골",
+    nameEn: "humerus (upper arm bone)",
+    fact: "어깨와 팔꿈치를 잇는 위팔의 뼈. 팔꿈치를 부딪혔을 때 찌릿한 곳은 뼈가 아니라 상완골 옆을 지나는 신경",
+    injury: "넘어지며 팔을 짚거나 팔꿈치로 떨어질 때",
+    product: "pre-mold",
+    brace: "NEAL Pre-mold Splint (Long Arm)",
+    braceEn: "pre-molded arm splint with velcro straps",
   },
   {
-    id: "rib",
+    id: "patella",
     type: "connect",
-    name: "늑골(갈비뼈)",
-    short: "늑골",
-    nameEn: "rib",
-    fact: "12쌍. 심장과 폐를 감싸는 보호막",
-    injury: "부딪힘. 골절되면 웃거나 기침할 때 아픔",
-    brace: "늑골 밴드",
-    braceEn: "rib support belt",
+    name: "슬개골(무릎뼈)",
+    short: "슬개골",
+    nameEn: "patella (kneecap)",
+    fact: "허벅지 근육의 힘줄 속에 있는 뼈. 무릎을 펴는 힘을 정강이로 전달하는 연결고리",
+    injury: "무릎을 바닥이나 모서리에 세게 찧을 때",
+    product: "pre-mold",
+    brace: "NEAL Pre-mold Splint (Long Leg Immobile)",
+    braceEn: "pre-molded leg splint with velcro straps",
   },
-  // ── 돌파형
+  // ── 돌파형: 부딪히며 앞으로 나가는 뼈
   {
     id: "distal-radius",
     type: "breakthrough",
@@ -167,9 +177,9 @@ export const BONES: Bone[] = [
     nameEn: "radius (forearm bone near the wrist)",
     fact: "손목을 돌리게 해주는 뼈",
     injury: "넘어지며 손을 짚을 때 (빙판 주의)",
-    brace: "NEAL Pre-mold Splint (Short Arm 손목 부목)",
-    product: "pre-mold",
-    braceEn: "pre-molded wrist splint with velcro straps",
+    product: "cast-plus",
+    brace: "NEAL Cast PLUS",
+    braceEn: CAST_EN,
   },
   {
     id: "metatarsal",
@@ -179,9 +189,9 @@ export const BONES: Bone[] = [
     nameEn: "metatarsal (foot bone)",
     fact: "발가락과 발목을 잇는 5개의 뼈",
     injury: "반복 충격에 의한 피로골절(일명 행군골절)",
-    brace: "NEAL Cast PLUS (캐스팅 테이프)",
-    product: "cast-plus",
-    braceEn: "colorful roll of casting tape",
+    product: "cast-premium",
+    brace: "SMILE Cast PREMIUM",
+    braceEn: CAST_EN,
   },
   {
     id: "fibula",
@@ -191,22 +201,11 @@ export const BONES: Bone[] = [
     nameEn: "fibula (calf bone)",
     fact: "체중은 적게 받지만 발목 안정에 중요. 뼈 이식용으로 쓰이기도 함",
     injury: "발목 접질림과 함께 골절",
-    brace: "NEAL Pre-mold Splint (Short Leg 하지 부목)",
     product: "pre-mold",
+    brace: "NEAL Pre-mold Splint (Short Leg)",
     braceEn: "pre-molded leg splint with velcro straps",
   },
-  {
-    id: "skull",
-    type: "breakthrough",
-    name: "두개골",
-    short: "두개골",
-    nameEn: "skull (cute cartoon cranium, friendly, not spooky)",
-    fact: "22개 뼈가 합쳐진 헬멧",
-    injury: "머리 부딪힘",
-    brace: "안전모 (보조기보다 예방!)",
-    braceEn: "yellow safety hard hat",
-  },
-  // ── 섬세형
+  // ── 섬세형: 작고 정교한 일을 하는 뼈
   {
     id: "scaphoid",
     type: "detail",
@@ -215,9 +214,9 @@ export const BONES: Bone[] = [
     nameEn: "scaphoid (small wrist bone)",
     fact: "손목 엄지 쪽 작은 뼈. 손목뼈 골절 중 가장 흔하고 혈액 공급이 약해 회복이 느림",
     injury: "손을 짚고 넘어질 때. 엑스레이에 잘 안 보이기도 함",
-    brace: "SMILE Splint SP (엄지 스파이카 부목)",
     product: "splint-sp",
-    braceEn: "thumb spica splint",
+    brace: "SMILE Splint SP",
+    braceEn: SPLINT_EN,
   },
   {
     id: "distal-phalanx",
@@ -227,42 +226,21 @@ export const BONES: Bone[] = [
     nameEn: "fingertip bone (distal phalanx)",
     fact: "정교한 손작업 담당",
     injury: "손가락 끝에 공을 맞아 생기는 망치손가락",
-    brace: "NEAL Splint N PLUS (손가락 부목)",
     product: "splint-n-plus",
-    braceEn: "finger splint",
+    brace: "NEAL Splint N PLUS",
+    braceEn: "small finger splint",
   },
   {
-    id: "stapes",
+    id: "metacarpal",
     type: "detail",
-    name: "등골(귀 속 뼈)",
-    short: "등골",
-    nameEn: "stapes (tiny stirrup-shaped ear bone)",
-    fact: "인체에서 가장 작은 뼈(약 3mm). 소리를 전달",
-    injury: "뼈 자체보다 귀가 소음에 약함",
-    brace: "귀마개 (공장 필수!)",
-    braceEn: "pair of foam earplugs",
-  },
-  {
-    id: "cervical",
-    type: "detail",
-    name: "경추(목뼈)",
-    short: "경추",
-    nameEn: "cervical vertebra (neck bone)",
-    fact: "7개. 사람도 기린도 목뼈는 7개",
-    injury: "거북목, 장시간 모니터 업무",
-    brace: "경추 보조기",
-    braceEn: "cervical neck collar brace",
-  },
-  {
-    id: "coccyx",
-    type: "detail",
-    name: "미골(꼬리뼈)",
-    short: "꼬리뼈",
-    nameEn: "coccyx (tailbone)",
-    fact: "꼬리의 흔적. 앉을 때 체중 일부를 받음",
-    injury: "엉덩방아",
-    brace: "도넛 방석",
-    braceEn: "donut-shaped seat cushion",
+    name: "중수골(손허리뼈)",
+    short: "중수골",
+    nameEn: "metacarpal (hand bone)",
+    fact: "손목과 손가락을 잇는 5개의 손바닥 뼈. 정교한 손동작의 뼈대",
+    injury: "주먹으로 단단한 것을 칠 때 (일명 복서 골절)",
+    product: "splint-fg",
+    brace: "SMILE Splint FG",
+    braceEn: SPLINT_EN,
   },
 ];
 
